@@ -1,0 +1,13 @@
+@model BordspelApp.WebApp.Models.GameNightCreateViewModel
+@{
+    ViewData["Title"] = "Nieuwe spelavond";
+}
+<h2>@ViewData["Title"]</h2>
+<form asp-action="Create" method="post">
+    <partial name="_Form" />
+    <button class="btn btn-primary" type="submit">Opslaan</button>
+    <a class="btn btn-secondary" asp-action="Index">Annuleren</a>
+</form>
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,35 @@
+@model IEnumerable<BordspelApp.Domain.Entities.GameNight>
+@{
+    ViewData["Title"] = "Spelavonden";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="mb-3">
+    <a class="btn btn-primary" asp-action="Create">Nieuwe spelavond</a>
+    <a class="btn btn-outline-secondary" asp-action="MyOrganized">Mijn georganiseerde</a>
+    <a class="btn btn-outline-secondary" asp-action="MyParticipating">Mijn deelname</a>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Datum</th>
+        <th>Organisator</th>
+        <th>Spellen</th>
+        <th>18+</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.DateTime.ToString("g")</td>
+            <td>@item.Organizer?.FullName</td>
+            <td>@string.Join(", ", item.BoardGames.Select(b => b.BoardGame.Name))</td>
+            <td>@(item.Is18Plus ? "Ja" : "Nee")</td>
+            <td>
+                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,18 @@
+@model BordspelApp.Domain.Entities.GameNight
+@{
+    ViewData["Title"] = "Spelavond verwijderen";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="alert alert-warning">
+    Weet je zeker dat je deze spelavond wilt verwijderen? Dit kan niet ongedaan gemaakt worden.
+</div>
+<dl class="row">
+    <dt class="col-sm-2">Datum</dt>
+    <dd class="col-sm-10">@Model.DateTime.ToString("f")</dd>
+    <dt class="col-sm-2">Organisator</dt>
+    <dd class="col-sm-10">@Model.Organizer.FullName</dd>
+</dl>
+<form asp-action="Delete" method="post">
+    <button class="btn btn-danger" type="submit">Verwijderen</button>
+    <a class="btn btn-secondary" asp-action="Details" asp-route-id="@Model.Id">Annuleren</a>
+</form>

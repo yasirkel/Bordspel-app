@@ -1,0 +1,156 @@
+html {
+  font-size: 14px;
+}
+
+header a {
+    color: #fff !important;
+}
+
+h1, h2, h3, h4, p, b, span {
+    color: #fff;
+}
+
+h1 {
+    text-transform: uppercase;
+    font-family: "Fugaz One";
+}
+
+h2, h3, h4, h5 {
+    font-family: "Poppins";
+    font-weight: 700;
+}
+
+.banner {
+    padding: 200px 0px;
+}
+
+.green-button {
+    border: 0px;
+    background: #aaff33;
+    padding: 10px 30px !important;
+    border-radius: 50px;
+    color: #000 !important;
+    text-decoration: none;
+}
+
+.purple-button {
+    border:0px;
+    color: #fff !important;
+    background: #a04ab4;
+    padding: 10px 30px !important;
+    border-radius: 50px;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.red-button {
+    border: 0px;
+    color: #fff !important;
+    background: #cf4242;
+    padding: 5px 30px !important;
+    border-radius: 50px;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+navbar-nav a {
+    color: #fff;
+}
+
+.spelavond-card {
+    background: #2f2f2f;
+    border-radius: 20px;
+    padding: 35px 50px;
+}
+
+.spelavonden-section {
+    padding-bottom: 200px;
+}
+
+.bordspellen-wrapper {
+    max-height: 1000px;
+    overflow:auto;
+}
+
+.bordspellen-banner {
+    padding: 150px 0px;
+}
+
+.bordspel-item {
+    background: #2f2f2f;
+    border-radius: 10px;
+}
+
+.bordspel-item img {
+    height: 40px;
+    width: 40px;
+    background-image: url("/lib/bordspellen.png");
+    background-size: cover;
+    border-radius: 999px;
+}
+
+.login-wrapper {
+    padding-top: 100px;
+    padding-bottom: 200px;
+}
+
+.login-wrapper input {
+        color: #fff !important;
+        background: #2f2f2f;
+        border: none;
+}
+
+.login-wrapper input:focus {
+  color: #fff !important;
+  background: #2f2f2f;
+  border: none;
+}
+
+.checkbox {
+    color: #fff;
+}
+
+.login-wrapper input::placeholder {
+        color: #fff !important;
+}
+
+
+@media (min-width: 768px) {
+    html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    background: #222222 !important;
+}
+
+.error-message {
+    position: absolute;
+    display: none;
+    color: #cf4242;
+    font-size: 14px;
+    position: absolute;
+    width: 15%;
+    background: #2f2f2f;
+    padding: 10px;
+    border: 2px solid #cf4242;
+    box-shadow: 0px 0px 10px #cf4242;
+    border-radius: 10px;
+    top: 10px;
+    right: 10px;
+}
+
+.button-container {
+    display: inline-block;
+}

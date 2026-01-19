@@ -1,0 +1,96 @@
+@model BordspelApp.WebApp.Models.GameNightListViewModel
+@{
+    ViewData["Title"] = "Alle Spelavonden";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>@ViewData["Title"]</h1>
+            <p class="text-muted">Vind een spelavond bij jou in de buurt!</p>
+        </div>
+    </div>
+
+    <!-- Zoeken en filteren -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="All">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="searchCity" class="form-label">Zoek op stad</label>
+                        <input type="text" class="form-control" id="searchCity" name="searchCity" 
+                               value="@Model.SearchCity" placeholder="Bijv. Breda">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="searchOrganizer" class="form-label">Zoek op organisator</label>
+                        <input type="text" class="form-control" id="searchOrganizer" name="searchOrganizer" 
+                               value="@Model.SearchOrganizer" placeholder="Naam">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Zoeken
+                        </button>
+                        <a href="@Url.Action("All")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Wissen
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.GameNights.Any())
+    {
+        <!-- Lijst van spelavonden -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+            @foreach (var gameNight in Model.GameNights)
+            {
+                <div class="col">
+                    <partial name="_GameNightCard" model="gameNight" />
+                </div>
+            }
+        </div>
+
+        <!-- Paginatie -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Paginatie">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("All", new { page = Model.CurrentPage - 1, searchCity = Model.SearchCity, searchOrganizer = Model.SearchOrganizer })">
+                            Vorige
+                        </a>
+                    </li>
+                    
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("All", new { page = i, searchCity = Model.SearchCity, searchOrganizer = Model.SearchOrganizer })">
+                                @i
+                            </a>
+                        </li>
+                    }
+                    
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("All", new { page = Model.CurrentPage + 1, searchCity = Model.SearchCity, searchOrganizer = Model.SearchOrganizer })">
+                            Volgende
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <!-- Lege staat -->
+        <div class="text-center py-5">
+            <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
+            <h3>Geen spelavonden gevonden</h3>
+            <p class="text-muted">Probeer een andere zoekopdracht of kom later terug.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+}

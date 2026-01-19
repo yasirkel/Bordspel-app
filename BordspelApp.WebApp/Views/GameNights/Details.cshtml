@@ -1,0 +1,262 @@
+@model BordspelApp.WebApp.Models.GameNightDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Title ?? "Details spelavond";
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="All">Spelavonden</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-calendar-alt text-primary"></i> @Model.Title
+                        @if (Model.Is18Plus)
+                        {
+                            <span class="badge bg-danger ms-2">18+</span>
+                        }
+                    </h2>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="card-text">@Model.Description</p>
+                    }
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-clock text-primary"></i>
+                                <strong>Datum & Tijd:</strong><br>
+                                @Model.StartAt.ToString("dddd dd MMMM yyyy 'om' HH:mm")
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-user text-primary"></i>
+                                <strong>Organisator:</strong><br>
+                                @Model.OrganizerName
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                <strong>Adres:</strong><br>
+                                @Model.Street @Model.HouseNumber<br>
+                                @Model.PostalCode @Model.City
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-users text-primary"></i>
+                                <strong>Spelers:</strong><br>
+                                @Model.CurrentPlayers / @Model.MaxPlayers
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-utensils text-primary"></i> Dieetwensen
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1">
+                                @if (Model.HasLactoseFree)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                }
+                                Lactosevrij
+                            </p>
+                            <p class="mb-1">
+                                @if (Model.HasNutFree)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                }
+                                Notenvrij
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1">
+                                @if (Model.HasVegetarian)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                }
+                                Vegetarisch
+                            </p>
+                            <p class="mb-1">
+                                @if (Model.HasAlcoholFree)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                }
+                                Alcoholvrij
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.BoardGames.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-dice-d20 text-primary"></i> Bordspellen
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            @foreach (var game in Model.BoardGames)
+                            {
+                                <div class="col">
+                                    <div class="card h-100">
+                                        @if (!string.IsNullOrEmpty(game.ImageUrl))
+                                        {
+                                            <img src="@game.ImageUrl" class="card-img-top" alt="@game.Name" style="height: 150px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                <i class="fas fa-dice-d20 fa-3x text-white-50"></i>
+                                            </div>
+                                        }
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                @game.Name
+                                                @if (game.Is18Plus)
+                                                {
+                                                    <span class="badge bg-danger">18+</span>
+                                                }
+                                            </h6>
+                                            <p class="card-text small text-muted mb-1">
+                                                <i class="fas fa-layer-group"></i> @game.Genre
+                                            </p>
+                                            <p class="card-text small text-muted">
+                                                <i class="fas fa-gamepad"></i> @game.Type
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Players.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-users text-primary"></i> Deelnemers (@Model.Players.Count)
+                        </h5>
+                        <div class="list-group list-group-flush">
+                            @foreach (var player in Model.Players)
+                            {
+                                <div class="list-group-item">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user"></i> @player.Name
+                                    </h6>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            @if ((bool?)ViewData["CanEdit"] == true)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-cog text-primary"></i> Beheer
+                        </h5>
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Bewerken
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Verwijderen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-ticket-alt text-primary"></i> Aanmelden
+                    </h5>
+                    
+                    @if (TempData["Error"] is string err)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> @err
+                        </div>
+                    }
+                    
+                    @if (TempData["Success"] is string success)
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> @success
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2">
+                        <form asp-action="Register" asp-route-id="@Model.Id" method="post">
+                            <button class="btn btn-success w-100" type="submit">
+                                <i class="fas fa-user-plus"></i> Aanmelden
+                            </button>
+                        </form>
+                        <form asp-action="Unregister" asp-route-id="@Model.Id" method="post">
+                            <button class="btn btn-outline-danger w-100" type="submit">
+                                <i class="fas fa-user-minus"></i> Uitschrijven
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a asp-action="All" class="btn btn-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> Terug naar overzicht
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+        }
+    </div>
+</div>

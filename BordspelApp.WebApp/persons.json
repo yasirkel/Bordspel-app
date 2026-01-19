@@ -1,0 +1,89 @@
+﻿{
+    "value":  [
+                  {
+                      "id":  1,
+                      "firstName":  "Jan",
+                      "lastName":  "de Vries",
+                      "email":  "jan.devries@example.com",
+                      "dateOfBirth":  "1990-05-15T00:00:00",
+                      "gender":  0,
+                      "address":  {
+                                      "street":  "Lovensdijkstraat",
+                                      "houseNumber":  "61",
+                                      "postalCode":  "",
+                                      "city":  "Breda"
+                                  },
+                      "dietaryRequirements":  {
+                                                  "isLactoseFree":  false,
+                                                  "isNutFree":  false,
+                                                  "isVegetarian":  false,
+                                                  "isAlcoholFree":  false
+                                              },
+                      "organizedGameNights":  [
+
+                                              ],
+                      "gameNightParticipations":  [
+
+                                                  ],
+                      "age":  35,
+                      "fullName":  "Jan de Vries"
+                  },
+                  {
+                      "id":  2,
+                      "firstName":  "Anna",
+                      "lastName":  "Jansen",
+                      "email":  "anna.jansen@example.com",
+                      "dateOfBirth":  "2000-08-20T00:00:00",
+                      "gender":  1,
+                      "address":  {
+                                      "street":  "Hogeschoollaan",
+                                      "houseNumber":  "1",
+                                      "postalCode":  "",
+                                      "city":  "Breda"
+                                  },
+                      "dietaryRequirements":  {
+                                                  "isLactoseFree":  true,
+                                                  "isNutFree":  true,
+                                                  "isVegetarian":  true,
+                                                  "isAlcoholFree":  false
+                                              },
+                      "organizedGameNights":  [
+
+                                              ],
+                      "gameNightParticipations":  [
+
+                                                  ],
+                      "age":  25,
+                      "fullName":  "Anna Jansen"
+                  },
+                  {
+                      "id":  3,
+                      "firstName":  "Yasir",
+                      "lastName":  "Kel",
+                      "email":  "yasir@email.com",
+                      "dateOfBirth":  "1999-03-10T00:00:00",
+                      "gender":  1,
+                      "address":  {
+                                      "street":  "Studentenstraat",
+                                      "houseNumber":  "42",
+                                      "postalCode":  "4818AB",
+                                      "city":  "Breda"
+                                  },
+                      "dietaryRequirements":  {
+                                                  "isLactoseFree":  false,
+                                                  "isNutFree":  false,
+                                                  "isVegetarian":  false,
+                                                  "isAlcoholFree":  false
+                                              },
+                      "organizedGameNights":  [
+
+                                              ],
+                      "gameNightParticipations":  [
+
+                                                  ],
+                      "age":  26,
+                      "fullName":  "Yasir Kel"
+                  }
+              ],
+    "Count":  3
+}

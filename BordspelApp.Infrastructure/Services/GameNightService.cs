@@ -1,0 +1,288 @@
+using BordspelApp.Application.DTOs;
+using BordspelApp.Application.Interfaces;
+using BordspelApp.Domain.Entities;
+using BordspelApp.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
+
+namespace BordspelApp.Infrastructure.Services;
+
+public class GameNightService : IGameNightService
+{
+    private readonly IGameNightRepository _gameNightRepository;
+    private readonly IBoardGameRepository _boardGameRepository;
+
+    public GameNightService(IGameNightRepository gameNightRepository, IBoardGameRepository boardGameRepository)
+    {
+        _gameNightRepository = gameNightRepository;
+        _boardGameRepository = boardGameRepository;
+    }
+
+    public async Task<IEnumerable<GameNightListItemDto>> GetAllUpcomingAsync(string? searchCity = null, string? searchOrganizer = null, int page = 1, int pageSize = 10)
+    {
+        var query = _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Address)
+            .Include(gn => gn.Players)
+            .Where(gn => gn.DateTime >= DateTime.Now);
+
+        if (!string.IsNullOrWhiteSpace(searchCity))
+        {
+            query = query.Where(gn => gn.Address.City.Contains(searchCity));
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchOrganizer))
+        {
+            query = query.Where(gn => 
+                (gn.Organizer.FirstName + " " + gn.Organizer.LastName).Contains(searchOrganizer));
+        }
+
+        var gameNights = await query
+            .OrderBy(gn => gn.DateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return gameNights.Select(gn => new GameNightListItemDto
+        {
+            Id = gn.Id,
+            Title = gn.Title,
+            StartAt = gn.DateTime,
+            City = gn.Address.City,
+            OrganizerName = $"{gn.Organizer.FirstName} {gn.Organizer.LastName}",
+            MaxPlayers = gn.MaxPlayers,
+            CurrentPlayers = gn.Players.Count,
+            Is18Plus = gn.Is18Plus
+        });
+    }
+
+    public async Task<int> GetTotalUpcomingCountAsync(string? searchCity = null, string? searchOrganizer = null)
+    {
+        var query = _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Address)
+            .Where(gn => gn.DateTime >= DateTime.Now);
+
+        if (!string.IsNullOrWhiteSpace(searchCity))
+        {
+            query = query.Where(gn => gn.Address.City.Contains(searchCity));
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchOrganizer))
+        {
+            query = query.Where(gn => 
+                (gn.Organizer.FirstName + " " + gn.Organizer.LastName).Contains(searchOrganizer));
+        }
+
+        return await query.CountAsync();
+    }
+
+    public async Task<IEnumerable<GameNightListItemDto>> GetMyGameNightsAsync(int organizerId)
+    {
+        var gameNights = await _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Address)
+            .Include(gn => gn.Players)
+            .Where(gn => gn.OrganizerId == organizerId)
+            .OrderBy(gn => gn.DateTime)
+            .ToListAsync();
+
+        return gameNights.Select(gn => new GameNightListItemDto
+        {
+            Id = gn.Id,
+            Title = gn.Title,
+            StartAt = gn.DateTime,
+            City = gn.Address.City,
+            OrganizerName = $"{gn.Organizer.FirstName} {gn.Organizer.LastName}",
+            MaxPlayers = gn.MaxPlayers,
+            CurrentPlayers = gn.Players.Count,
+            Is18Plus = gn.Is18Plus
+        });
+    }
+
+    public async Task<IEnumerable<GameNightListItemDto>> GetParticipatingGameNightsAsync(int personId)
+    {
+        var gameNights = await _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Address)
+            .Include(gn => gn.Players)
+            .Where(gn => gn.Players.Any(p => p.PersonId == personId))
+            .OrderBy(gn => gn.DateTime)
+            .ToListAsync();
+
+        return gameNights.Select(gn => new GameNightListItemDto
+        {
+            Id = gn.Id,
+            Title = gn.Title,
+            StartAt = gn.DateTime,
+            City = gn.Address.City,
+            OrganizerName = $"{gn.Organizer.FirstName} {gn.Organizer.LastName}",
+            MaxPlayers = gn.MaxPlayers,
+            CurrentPlayers = gn.Players.Count,
+            Is18Plus = gn.Is18Plus
+        });
+    }
+
+    public async Task<GameNightDetailsDto?> GetDetailsAsync(int id)
+    {
+        var gameNight = await _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Address)
+            .Include(gn => gn.Players)
+                .ThenInclude(p => p.Person)
+            .Include(gn => gn.BoardGames)
+                .ThenInclude(gnbg => gnbg.BoardGame)
+            .FirstOrDefaultAsync(gn => gn.Id == id);
+
+        if (gameNight == null) return null;
+
+        return new GameNightDetailsDto
+        {
+            Id = gameNight.Id,
+            Title = gameNight.Title,
+            Description = gameNight.Description,
+            StartAt = gameNight.DateTime,
+            MaxPlayers = gameNight.MaxPlayers,
+            Is18Plus = gameNight.Is18Plus,
+            Street = gameNight.Address.Street,
+            HouseNumber = gameNight.Address.HouseNumber,
+            City = gameNight.Address.City,
+            PostalCode = gameNight.Address.PostalCode,
+            OrganizerId = gameNight.OrganizerId,
+            OrganizerName = $"{gameNight.Organizer.FirstName} {gameNight.Organizer.LastName}",
+            HasLactoseFree = gameNight.HasLactoseFreeOption,
+            HasNutFree = gameNight.HasNutFreeOption,
+            HasVegetarian = gameNight.HasVegetarianOption,
+            HasAlcoholFree = gameNight.HasAlcoholFreeOption,
+            Players = gameNight.Players.Select(p => new PlayerDto
+            {
+                PersonId = p.PersonId,
+                Name = $"{p.Person.FirstName} {p.Person.LastName}"
+            }).ToList(),
+            BoardGames = gameNight.BoardGames.Select(gnbg => new BoardGameSimpleDto
+            {
+                Id = gnbg.BoardGame.Id,
+                Name = gnbg.BoardGame.Name,
+                Genre = gnbg.BoardGame.Genre.ToString(),
+                Type = gnbg.BoardGame.Type.ToString(),
+                Is18Plus = gnbg.BoardGame.Is18Plus,
+                ImageUrl = gnbg.BoardGame.PhotoUrl
+            }).ToList()
+        };
+    }
+
+    public async Task<bool> CreateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
+    {
+        var address = new Address(dto.Street, dto.HouseNumber, dto.City, dto.PostalCode);
+        
+        var gameNight = new GameNight(
+            dto.Title,
+            dto.Description,
+            dto.StartAt,
+            address,
+            dto.MaxPlayers,
+            dto.OrganizerId
+        );
+
+        gameNight.HasLactoseFreeOption = dto.HasLactoseFree;
+        gameNight.HasNutFreeOption = dto.HasNutFree;
+        gameNight.HasVegetarianOption = dto.HasVegetarian;
+        gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
+
+        // Add board games
+        var boardGames = await _boardGameRepository.GetAllQueryable()
+            .Where(bg => boardGameIds.Contains(bg.Id))
+            .ToListAsync();
+
+        foreach (var boardGame in boardGames)
+        {
+            gameNight.AddBoardGame(boardGame);
+        }
+
+        gameNight.Recalculate18Plus();
+
+        await _gameNightRepository.AddAsync(gameNight);
+        return true;
+    }
+
+    public async Task<bool> UpdateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
+    {
+        var gameNight = await _gameNightRepository.GetAllQueryable()
+            .Include(gn => gn.Address)
+            .Include(gn => gn.Players)
+            .Include(gn => gn.BoardGames)
+                .ThenInclude(gnbg => gnbg.BoardGame)
+            .FirstOrDefaultAsync(gn => gn.Id == dto.Id);
+
+        if (gameNight == null) return false;
+
+        // Check if editing is allowed
+        if (gameNight.Players.Any())
+        {
+            return false; // Cannot edit if players are registered
+        }
+
+        // Update basic properties
+        gameNight.Title = dto.Title;
+        gameNight.Description = dto.Description;
+        gameNight.DateTime = dto.StartAt;
+        gameNight.MaxPlayers = dto.MaxPlayers;
+        
+        // Update address
+        gameNight.Address.UpdateAddress(dto.Street, dto.HouseNumber, dto.City, dto.PostalCode);
+        
+        // Update catering
+        gameNight.HasLactoseFreeOption = dto.HasLactoseFree;
+        gameNight.HasNutFreeOption = dto.HasNutFree;
+        gameNight.HasVegetarianOption = dto.HasVegetarian;
+        gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
+
+        // Update board games
+        gameNight.BoardGames.Clear();
+        var boardGames = await _boardGameRepository.GetAllQueryable()
+            .Where(bg => boardGameIds.Contains(bg.Id))
+            .ToListAsync();
+
+        foreach (var boardGame in boardGames)
+        {
+            gameNight.AddBoardGame(boardGame);
+        }
+
+        gameNight.Recalculate18Plus();
+
+        await _gameNightRepository.UpdateAsync(gameNight);
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var gameNight = await _gameNightRepository.GetAllQueryable()
+            .Include(gn => gn.Players)
+            .FirstOrDefaultAsync(gn => gn.Id == id);
+
+        if (gameNight == null) return false;
+
+        // Check if deletion is allowed
+        if (gameNight.Players.Any())
+        {
+            return false; // Cannot delete if players are registered
+        }
+
+        await _gameNightRepository.DeleteAsync(gameNight);
+        return true;
+    }
+
+    public async Task<bool> CanEditOrDeleteAsync(int id)
+    {
+        var gameNight = await _gameNightRepository.GetAllQueryable()
+            .AsNoTracking()
+            .Include(gn => gn.Players)
+            .FirstOrDefaultAsync(gn => gn.Id == id);
+
+        return gameNight != null && !gameNight.Players.Any();
+    }
+}

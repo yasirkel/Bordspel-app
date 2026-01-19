@@ -1,0 +1,35 @@
+@model BordspelApp.WebApp.Models.BoardGameCardViewModel
+
+<div class="card h-100 shadow-sm">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="height: 200px; object-fit: cover;" />
+    }
+    else
+    {
+        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+            <i class="fas fa-dice fa-3x text-muted"></i>
+        </div>
+    }
+    
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">@Model.Name</h5>
+            @if (Model.Is18Plus)
+            {
+                <span class="badge bg-danger">18+</span>
+            }
+        </div>
+        
+        <p class="card-text small">
+            <span class="badge bg-primary me-1">@Model.Genre</span>
+            <span class="badge bg-secondary">@Model.Type</span>
+        </p>
+    </div>
+    
+    <div class="card-footer bg-transparent">
+        <a href="@Url.Action("Details", "BoardGames", new { id = Model.Id })" class="btn btn-outline-primary btn-sm w-100">
+            Bekijk details
+        </a>
+    </div>
+</div>

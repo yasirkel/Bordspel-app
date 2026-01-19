@@ -1,0 +1,30 @@
+@model BordspelApp.WebApp.Models.GameNightItemViewModel
+
+<div class="card h-100 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title">@Model.Title</h5>
+            @if (Model.Is18Plus)
+            {
+                <span class="badge bg-danger">18+</span>
+            }
+        </div>
+        
+        <p class="card-text">
+            <i class="fas fa-calendar"></i> @Model.StartAt.ToString("dd-MM-yyyy HH:mm")<br />
+            <i class="fas fa-map-marker-alt"></i> @Model.City<br />
+            <i class="fas fa-user"></i> @Model.OrganizerName<br />
+            <i class="fas fa-users"></i> @Model.CurrentPlayers / @Model.MaxPlayers spelers
+        </p>
+        
+        @if (Model.IsFull)
+        {
+            <span class="badge bg-secondary mb-2">VOL</span>
+        }
+    </div>
+    <div class="card-footer bg-transparent">
+        <a href="@Url.Action("Details", "GameNights", new { id = Model.Id })" class="btn btn-primary btn-sm w-100">
+            Bekijk details
+        </a>
+    </div>
+</div>
