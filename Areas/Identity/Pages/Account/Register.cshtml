@@ -53,6 +53,28 @@
                     </div>
                 </div>
 
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label-sm">Allergies / Dietary</label>
+                    <div class="col-sm-8">
+                        <div class="form-check">
+                            <input asp-for="Input.IsLactoseFree" class="form-check-input" />
+                            <label class="form-check-label">Lactose free</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="Input.IsNutFree" class="form-check-input" />
+                            <label class="form-check-label">Nut free</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="Input.IsVegetarian" class="form-check-input" />
+                            <label class="form-check-label">Vegetarian</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="Input.IsAlcoholFree" class="form-check-input" />
+                            <label class="form-check-label">No alcohol</label>
+                        </div>
+                    </div>
+                </div>
+
             <div class="row mb-3">
                 <label class="col-sm-4 col-form-label-sm">Password</label>
                 <div class="col-sm-8">

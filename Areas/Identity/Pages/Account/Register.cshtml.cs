@@ -19,6 +19,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using BordspelApp.Application.Interfaces;
+using BordspelApp.Domain.Entities;
+using BordspelApp.Domain.ValueObjects;
+using BordspelApp.Domain.Enums;
 
 namespace Bordspel_app.Areas.Identity.Pages.Account
 {
@@ -31,12 +35,15 @@ namespace Bordspel_app.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
+        private readonly IPersonRepository _personRepository;
+
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IPersonRepository personRepository)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +51,7 @@ namespace Bordspel_app.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _personRepository = personRepository;
         }
 
         /// <summary>
@@ -90,6 +98,19 @@ namespace Bordspel_app.Areas.Identity.Pages.Account
 
             [Required]
             public string Address { get; set; }
+
+            // Dietary preferences / allergies
+            [Display(Name = "Lactose free")]
+            public bool IsLactoseFree { get; set; }
+
+            [Display(Name = "Nut free")]
+            public bool IsNutFree { get; set; }
+
+            [Display(Name = "Vegetarian")]
+            public bool IsVegetarian { get; set; }
+
+            [Display(Name = "No alcohol")]
+            public bool IsAlcoholFree { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -143,6 +164,27 @@ namespace Bordspel_app.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
+                    // Create a minimal domain Person record and store dietary preferences
+                    try
+                    {
+                        var person = new Person
+                        {
+                            FirstName = Input.FirstName,
+                            LastName = Input.LastName,
+                            Email = Input.Email,
+                            DateOfBirth = DateTime.UtcNow.AddYears(-18),
+                            Gender = Gender.Other,
+                            Address = new BordspelApp.Domain.ValueObjects.Address(Input.Address, string.Empty, string.Empty),
+                            DietaryRequirements = new DietaryRequirements(Input.IsLactoseFree, Input.IsNutFree, Input.IsVegetarian, Input.IsAlcoholFree)
+                        };
+
+                        await _personRepository.AddAsync(person);
+                    }
+                    catch
+                    {
+                        // non-fatal: if creating a Person fails, continue registration flow
+                    }
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

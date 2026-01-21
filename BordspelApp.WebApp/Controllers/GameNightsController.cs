@@ -2,9 +2,14 @@ using BordspelApp.Application.DTOs;
 using BordspelApp.Application.Interfaces;
 using BordspelApp.Application.Models;
 using BordspelApp.WebApp.Models;
+using BordspelApp.Domain.Entities;
+using BordspelApp.Domain.Enums;
+using BordspelApp.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using BordspelApp.Domain.ValueObjects;
 
 namespace BordspelApp.WebApp.Controllers;
 
@@ -14,17 +19,26 @@ public class GameNightsController : Controller
     private readonly IRegistrationService _registrationService;
     private readonly IBoardGameService _boardGameService;
     private readonly IPersonService _personService;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IPersonRepository _personRepository;
+    private readonly Microsoft.Extensions.Logging.ILogger<GameNightsController> _logger;
 
     public GameNightsController(
         IGameNightService gameNightService,
         IRegistrationService registrationService,
         IBoardGameService boardGameService,
-        IPersonService personService)
+        IPersonService personService,
+        UserManager<ApplicationUser> userManager,
+        IPersonRepository personRepository,
+        Microsoft.Extensions.Logging.ILogger<GameNightsController> logger)
     {
         _gameNightService = gameNightService;
         _registrationService = registrationService;
         _boardGameService = boardGameService;
         _personService = personService;
+        _userManager = userManager;
+        _personRepository = personRepository;
+        _logger = logger;
     }
 
     // GET: /GameNights/All
@@ -223,8 +237,14 @@ public class GameNightsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(GameNightCreateViewModel model)
     {
+        _logger.LogInformation("Create POST received: {@Model}", model);
+
         if (!ModelState.IsValid)
         {
+            var errors = ModelState.Where(kvp => kvp.Value.Errors.Count>0)
+                .Select(kvp => new { Key = kvp.Key, Errors = kvp.Value.Errors.Select(e=>e.ErrorMessage) });
+            foreach(var e in errors) _logger.LogWarning("ModelState error: {Key} -> {Errors}", e.Key, string.Join(";", e.Errors));
+
             var boardGames = await _boardGameService.GetAllAsync();
             model.AvailableBoardGames = boardGames.Select(bg => new BoardGameSelectionItem
             {
@@ -267,6 +287,7 @@ public class GameNightsController : Controller
         };
 
         var success = await _gameNightService.CreateAsync(dto, model.SelectedBoardGameIds);
+        _logger.LogInformation("GameNight create result: {Success}", success);
         if (success)
         {
             TempData["Success"] = "Spelavond succesvol aangemaakt!";
@@ -583,13 +604,46 @@ public class GameNightsController : Controller
 
     private async Task<int?> GetCurrentPersonIdAsync()
     {
+        // Try email claim first
         var email = User.FindFirstValue(ClaimTypes.Email);
+
+        // If no email claim, try to get it from the Identity user
+        ApplicationUser identityUser = null;
         if (string.IsNullOrEmpty(email))
         {
-            return null;
+            identityUser = await _userManager.GetUserAsync(User);
+            if (identityUser == null) return null;
+            if (identityUser.PersonId.HasValue) return identityUser.PersonId.Value;
+            email = identityUser.Email;
         }
 
+        if (string.IsNullOrEmpty(email)) return null;
+
+        // Try to find domain person by email
         var person = await _personService.GetByEmailAsync(email);
-        return person?.Id;
+        if (person != null) return person.Id;
+
+        // No person exists: create a minimal Person and link it to the identity user
+        var newPerson = new Person
+        {
+            FirstName = User.Identity?.Name ?? string.Empty,
+            LastName = string.Empty,
+            Email = email,
+            DateOfBirth = DateTime.UtcNow.AddYears(-18),
+            Gender = Gender.Other,
+            Address = new Address()
+        };
+
+        var added = await _personRepository.AddAsync(newPerson);
+
+        // Update identity user if available
+        identityUser ??= await _userManager.GetUserAsync(User);
+        if (identityUser != null)
+        {
+            identityUser.PersonId = added.Id;
+            await _userManager.UpdateAsync(identityUser);
+        }
+
+        return added.Id;
     }
 }

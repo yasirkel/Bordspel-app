@@ -1,8 +1,50 @@
-﻿@{
+﻿@model BordspelApp.WebApp.Models.GameNightListViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center banner">
+    <h1 class="">Welkom bij onze spel avond applicatie</h1>
+    <p class="pb-4">Organiseer, deel, en speel samen met je familie en of vrienden, voeg bordspellen toe, en maak spel avonden.</p>
+
+    <div class="header-buttons d-flex gap-3 justify-content-center">
+        <div class="bordspellen-button">
+            <a class="purple-button" asp-area="" asp-controller="Home" asp-action="Bordspellen">Bordspellen</a>
+    </div>
+        <div class="bordspellen-button ">
+            <a class="green-button" asp-area="" asp-controller="Home" asp-action="Spelavonden">Spelavonden</a>
+        </div>
+    </div>
+</div>
+
+<div class="spelavonden-section">
+    <h2 class="pb-5">Recente spelavonden</h2>
+    
+    <div class="spelavond-cards-wrapper">
+        @if (Model.GameNights != null && Model.GameNights.Any())
+        {
+            foreach (var gn in Model.GameNights)
+            {
+                <div class="spelavond-card d-flex justify-content-between align-items-center mb-3">
+                    <div class="spelavond-col1">
+                        <h3 class="pb-2">@gn.Title</h3>
+                        <p class="w-50">@gn.StartAt.ToString("g") - @gn.City</p>
+                        <p>Gemaakt door: <b>@gn.OrganizerName</b></p>
+                    </div>
+
+                    <div class="spelavond-col2">
+                        <h3 class="me-0">@gn.StartAt.ToString("HH:mm")</h3>
+                        <p class="me-0">@gn.StartAt.ToString("dd-MM-yyyy")</p>
+                        <a class="purple-button" asp-controller="GameNights" asp-action="Details" asp-route-id="@gn.Id">Inschrijven</a>
+                    </div>
+
+                </div>
+            }
+        }
+        else
+        {
+            <p>Er zijn nog geen spelavonden gepland.</p>
+        }
+    </div>
 </div>
