@@ -124,12 +124,23 @@ public class GameNightRepository : IGameNightRepository
 
     public async Task<IEnumerable<GameNight>> GetGameNightsByParticipantAsync(int personId)
     {
-        return await _context.GameNightPlayers
-            .Where(gnp => gnp.PersonId == personId)
-            .Select(gnp => gnp.GameNight)
+        // First collect the game night IDs for this participant, then query
+        // GameNights with Includes. This avoids applying Include after a projection.
+        var ids = await _context.GameNightPlayers
+            .Where(p => p.PersonId == personId)
+            .Select(p => p.GameNightId)
+            .Distinct()
+            .ToListAsync();
+
+        if (!ids.Any()) return Array.Empty<GameNight>();
+
+        return await _context.GameNights
             .Include(gn => gn.Organizer)
+            .Include(gn => gn.Players)
+                .ThenInclude(p => p.Person)
             .Include(gn => gn.BoardGames)
                 .ThenInclude(bg => bg.BoardGame)
+            .Where(gn => ids.Contains(gn.Id))
             .ToListAsync();
     }
 }

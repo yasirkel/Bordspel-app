@@ -526,15 +526,14 @@ public class GameNightsController : Controller
 
         if (result.Result == RegistrationResult.DietaryMismatch)
         {
-            var gameNight = await _gameNightService.GetDetailsAsync(id);
-            var viewModel = new RegistrationConfirmViewModel
+            // Store warnings in TempData and redirect back to the details page
+            // so warnings are displayed inline above the Aanmelden button.
+            if (result.DietaryWarnings != null && result.DietaryWarnings.Any())
             {
-                GameNightId = id,
-                GameNightTitle = gameNight?.Title ?? "",
-                StartAt = gameNight?.StartAt ?? DateTime.Now,
-                DietaryWarnings = result.DietaryWarnings
-            };
-            return View("ConfirmRegistration", viewModel);
+                TempData["DietaryWarnings"] = string.Join("||", result.DietaryWarnings);
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         if (result.Result == RegistrationResult.Success)

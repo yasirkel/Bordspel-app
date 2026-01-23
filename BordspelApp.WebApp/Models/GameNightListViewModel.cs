@@ -3,6 +3,7 @@ namespace BordspelApp.WebApp.Models;
 public class GameNightListViewModel
 {
     public List<GameNightItemViewModel> GameNights { get; set; } = new();
+    public List<RecommendationViewModel> Recommendations { get; set; } = new();
     public string? SearchCity { get; set; }
     public string? SearchOrganizer { get; set; }
     public int CurrentPage { get; set; }

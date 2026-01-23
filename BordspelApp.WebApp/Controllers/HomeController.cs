@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using BordspelApp.WebApp.Models;
 using BordspelApp.Application.Interfaces;
+using System.Net.Http.Json;
 
 namespace BordspelApp.WebApp.Controllers;
 
@@ -9,11 +10,17 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly IGameNightService _gameNightService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly Microsoft.AspNetCore.Identity.UserManager<BordspelApp.Infrastructure.Identity.ApplicationUser> _userManager;
+    private readonly BordspelApp.Application.Interfaces.IPersonService _personService;
 
-    public HomeController(ILogger<HomeController> logger, IGameNightService gameNightService)
+    public HomeController(ILogger<HomeController> logger, IGameNightService gameNightService, IHttpClientFactory httpClientFactory, Microsoft.AspNetCore.Identity.UserManager<BordspelApp.Infrastructure.Identity.ApplicationUser> userManager, BordspelApp.Application.Interfaces.IPersonService personService)
     {
         _logger = logger;
         _gameNightService = gameNightService;
+        _httpClientFactory = httpClientFactory;
+        _userManager = userManager;
+        _personService = personService;
     }
 
     public async Task<IActionResult> Index()
@@ -35,6 +42,91 @@ public class HomeController : Controller
                 IsFull = gn.IsFull
             }).ToList()
         };
+
+        // If user is signed in, ensure they are linked to a Person and request recommendations from API GraphQL
+        if (User?.Identity?.IsAuthenticated == true)
+        {
+            var appUser = await _userManager.GetUserAsync(User);
+
+            // If user not linked to a Person record, try to link by email so recommendations can be requested
+            if (appUser != null && appUser.PersonId == null)
+            {
+                try
+                {
+                    var email = appUser.Email;
+                    if (!string.IsNullOrEmpty(email))
+                    {
+                        var person = await _personService.GetByEmailAsync(email);
+                        if (person != null)
+                        {
+                            appUser.PersonId = person.Id;
+                            await _userManager.UpdateAsync(appUser);
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to auto-link ApplicationUser to Person record for user {UserId}", appUser?.Id);
+                }
+            }
+
+            if (appUser?.PersonId != null)
+            {
+                try
+                {
+                    var client = _httpClientFactory.CreateClient("api");
+                    var gql = @"query($personId:Int!){ recommendedGameNights(personId:$personId) { gameNight { id title dateTime organizerName } commonPlayersCount } }";
+                    var req = new { query = gql, variables = new { personId = appUser.PersonId ?? 0 } };
+                    var res = await client.PostAsJsonAsync("graphql", req);
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        var body = await res.Content.ReadAsStringAsync();
+                        _logger.LogWarning("GraphQL recommendations request failed: {Status} {Body}", res.StatusCode, body);
+                    }
+                    else
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(await res.Content.ReadAsStringAsync());
+                        if (doc.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("recommendedGameNights", out var recs))
+                        {
+                            var any = false;
+                            foreach (var el in recs.EnumerateArray())
+                            {
+                                any = true;
+                                var gn = el.GetProperty("gameNight");
+                                var id = gn.GetProperty("id").GetInt32();
+                                var title = gn.GetProperty("title").GetString() ?? string.Empty;
+                                var dateTime = gn.GetProperty("dateTime").GetDateTime();
+                                var organizer = gn.TryGetProperty("organizerName", out var on) ? on.GetString() ?? string.Empty : string.Empty;
+                                var common = el.GetProperty("commonPlayersCount").GetInt32();
+
+                                viewModel.Recommendations.Add(new RecommendationViewModel
+                                {
+                                    GameNight = new GameNightItemViewModel
+                                    {
+                                        Id = id,
+                                        Title = title,
+                                        StartAt = dateTime,
+                                        OrganizerName = organizer
+                                    },
+                                    CommonPlayersCount = common
+                                });
+                            }
+
+                            // If GraphQL returned no recommendations, do not provide a fallback list.
+                            if (!any)
+                            {
+                                _logger.LogInformation("GraphQL returned zero recommendations for person {PersonId}", appUser.PersonId);
+                                // Intentionally no fallback — the view will show a message instead.
+                            }
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load recommendations from API");
+                }
+            }
+        }
 
         return View(viewModel);
     }

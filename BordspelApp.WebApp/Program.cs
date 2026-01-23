@@ -33,6 +33,11 @@ builder.Services.AddScoped<IGameNightService, BordspelApp.Infrastructure.Service
 builder.Services.AddScoped<IRegistrationService, BordspelApp.Infrastructure.Services.RegistrationService>();
 builder.Services.AddScoped<IBoardGameService, BordspelApp.Infrastructure.Services.BoardGameService>();
 builder.Services.AddScoped<IPersonService, BordspelApp.Infrastructure.Services.PersonService>();
+// HTTP client for calling local API GraphQL endpoint
+builder.Services.AddHttpClient("api", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "http://localhost:5247/");
+});
 
 var app = builder.Build();
 
@@ -42,6 +47,24 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
     context.Database.Migrate();
     DbSeeder.Seed(context);
+
+    // Development-only: repair existing AspNetUsers.PersonId by matching Persons.Email
+    var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+    var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Startup");
+    if (env.IsDevelopment())
+    {
+        try
+        {
+            logger.LogInformation("Development DB repair: backfilling AspNetUsers.PersonId from Persons by email.");
+            var sql = @"UPDATE u SET PersonId = p.Id FROM AspNetUsers u JOIN Persons p ON p.Email = u.Email WHERE u.PersonId IS NULL;";
+            context.Database.ExecuteSqlRaw(sql);
+            logger.LogInformation("DB repair executed.");
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogWarning(ex, "Development DB repair failed.");
+        }
+    }
 }
 
 // Configure the HTTP request pipeline.

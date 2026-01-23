@@ -226,12 +226,38 @@
                             <i class="fas fa-exclamation-circle"></i> @err
                         </div>
                     }
-                    
+
                     @if (TempData["Success"] is string success)
                     {
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i> @success
                         </div>
+                    }
+
+                    @* Show dietary warnings inline above the Aanmelden button when present in TempData *@
+                    @if (TempData["DietaryWarnings"] is string dw && !string.IsNullOrEmpty(dw))
+                    {
+                        var warnings = dw.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+                        if (warnings.Any())
+                        {
+                            <div class="alert alert-warning">
+                                <strong>Waarschuwingen gevonden:</strong>
+                                <ul class="mb-0">
+                                    @foreach (var w in warnings)
+                                    {
+                                        <li>@w</li>
+                                    }
+                                </ul>
+                                <div class="mt-2">Als je ondanks deze waarschuwingen toch wilt aanmelden, klik dan op "Aanmelden".</div>
+                            </div>
+                            <div class="mb-2">
+                                <form asp-action="ConfirmRegister" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="gameNightId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-warning">Bevestig aanmelding ondanks waarschuwingen</button>
+                                </form>
+                            </div>
+                        }
                     }
 
                     <div class="d-grid gap-2">

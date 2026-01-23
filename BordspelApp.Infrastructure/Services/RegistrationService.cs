@@ -20,6 +20,7 @@ public class RegistrationService : IRegistrationService
     {
         var person = await _personRepository.GetAllQueryable()
             .Include(p => p.GameNightParticipations)
+                .ThenInclude(gnp => gnp.GameNight)
             .FirstOrDefaultAsync(p => p.Id == personId);
 
         if (person == null)
@@ -79,9 +80,12 @@ public class RegistrationService : IRegistrationService
 
         // Check if already registered on the same day
         var gameNightDate = DateOnly.FromDateTime(gameNight.DateTime);
-        var existingRegistrationSameDay = person.GameNightParticipations
-            .Any(gnp => gnp.GameNightId != gameNightId && 
-                       DateOnly.FromDateTime(gnp.GameNight.DateTime) == gameNightDate);
+
+        // Load the person's participating game nights via repository to ensure
+        // the related GameNight.DateTime is available (avoids null navigation issues).
+        var participatingNights = await _gameNightRepository.GetGameNightsByParticipantAsync(personId);
+        var existingRegistrationSameDay = participatingNights
+            .Any(gn => gn.Id != gameNightId && DateOnly.FromDateTime(gn.DateTime) == gameNightDate);
 
         if (existingRegistrationSameDay)
         {

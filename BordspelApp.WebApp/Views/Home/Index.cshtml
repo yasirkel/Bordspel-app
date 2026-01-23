@@ -16,9 +16,57 @@
             <a class="green-button" asp-area="" asp-controller="Home" asp-action="Spelavonden">Spelavonden</a>
         </div>
     </div>
+
+        <section class="aanbevolen-section mt-5">
+            <h3 class="mb-1">Aanbevolen spelavonden voor jou</h3>
+            <p class="text-muted mb-4">Aanbevelingen gebaseerd op spelers die je eerder hebt gespeeld.</p>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                if (Model?.Recommendations != null && Model.Recommendations.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var item in Model.Recommendations.Take(6))
+                        {
+                            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                                <div class="card h-100 shadow-sm w-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title mb-2 line-clamp-2">@item.GameNight?.Title</h5>
+
+                                        <p class="text-muted mb-4">@((item.GameNight != null) ? $"{item.GameNight.CurrentPlayers}/{item.GameNight.MaxPlayers} spelers — {item.GameNight.City}" : string.Empty)</p>
+
+                                        <p class="card-text text-muted mb-2">
+                                            @(item.GameNight != null ? item.GameNight.StartAt.ToString("dd-MM-yyyy HH:mm") : string.Empty)
+                                        </p>
+
+
+                                        <div class="mb-2">
+                                            <span class="badge bg-primary">@item.CommonPlayersCount gedeeld</span>
+                                        </div>
+
+                                        <div class="mt-auto">
+                                            <a asp-controller="GameNights" asp-action="Details" asp-route-id="@item.GameNight?.Id" class="btn btn-primary">Bekijk</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center my-4">
+                        <div class="alert alert-info d-inline-block text-center">
+                            <div class="fs-5 fw-semibold">Schrijf je in om aanbevelingen te ontvangen</div>
+                            <div class="small text-muted">Aanbevelingen verschijnen nadat je je hebt ingeschreven voor minstens één spelavond en er spelersoverlap is.</div>
+                        </div>
+                    </div>
+                }
+            }
+        </section>
 </div>
 
-<div class="spelavonden-section">
+@* <div class="spelavonden-section">
     <h2 class="pb-5">Recente spelavonden</h2>
     
     <div class="spelavond-cards-wrapper">
@@ -46,5 +94,5 @@
         {
             <p>Er zijn nog geen spelavonden gepland.</p>
         }
-    </div>
+    </div> *@
 </div>

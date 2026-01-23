@@ -181,11 +181,25 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
                             DietaryRequirements = new DietaryRequirements(Input.IsLactoseFree, Input.IsNutFree, Input.IsVegetarian, Input.IsAlcoholFree)
                         };
 
-                        await _personRepository.AddAsync(person);
+                        var added = await _personRepository.AddAsync(person);
+                        // persist link between Identity user and domain Person
+                        try
+                        {
+                            user.PersonId = added.Id;
+                            var updateRes = await _userManager.UpdateAsync(user);
+                            if (!updateRes.Succeeded)
+                            {
+                                _logger.LogWarning("Failed to update ApplicationUser with PersonId for {Email}: {Errors}", Input.Email, string.Join(';', updateRes.Errors.Select(e => e.Description)));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to set PersonId on user {Email}", Input.Email);
+                        }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // non-fatal: if creating a Person fails, continue registration flow
+                        _logger.LogWarning(ex, "Non-fatal: failed to create domain Person for {Email}", Input.Email);
                     }
 
                     // assign default role if role store is supported
