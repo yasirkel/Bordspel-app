@@ -1,6 +1,8 @@
 ﻿using BordspelApp.Application.Interfaces;
 using BordspelApp.Infrastructure.Data;
 using BordspelApp.Infrastructure.Repositories;
+using BordspelApp.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using BordspelApp.Api.GraphQL;
@@ -13,6 +15,12 @@ builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure JSON options for minimal API responses as well
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 // Add GraphQL (HotChocolate v13)
 builder.Services.AddGraphQLServer()
@@ -27,6 +35,14 @@ builder.Services.AddGraphQLServer()
 // Add DbContext
 builder.Services.AddDbContext<BordspelAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Identity - register UserManager/RoleManager so the async seeder can run from the API if desired
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+    .AddEntityFrameworkStores<BordspelAppDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add Repositories
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
@@ -44,6 +60,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Enable authentication so Identity services are active during requests/startup
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -58,14 +76,28 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("SeedDat
     try
     {
         using var scope = app.Services.CreateScope();
-        await BordspelApp.Infrastructure.Data.DatabaseSeeder.SeedAsync(scope.ServiceProvider);
-        Console.WriteLine("[Seed] Database seeding completed successfully.");
+        var serviceProvider = scope.ServiceProvider;
+
+        // Only run the seeder when Identity services (UserManager<ApplicationUser>) are registered.
+        var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+        if (userManager == null)
+        {
+            Console.WriteLine("[Seed] Skipped: Identity services not registered in API (UserManager<ApplicationUser> missing). Run seeder from WebApp or register Identity in the API.");
+        }
+        else
+        {
+            await BordspelApp.Infrastructure.Data.DatabaseSeeder.SeedAsync(serviceProvider);
+            Console.WriteLine("[Seed] Database seeding completed successfully.");
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"[Seed] Database seeding failed: {ex}");
-        throw;
+        // Don't rethrow - allow the app to start even if seeding fails in the API.
     }
 }
+
+// Informative startup log about JSON settings
+Console.WriteLine("JSON IgnoreCycles enabled ✅");
 
 app.Run();
