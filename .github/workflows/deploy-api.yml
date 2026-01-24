@@ -1,0 +1,37 @@
+name: Deploy API to Azure Web App
+
+on:
+  push:
+    branches: [ "master", "development", "main" ]
+    paths:
+      - "BordspelApp.Api/**"
+      - ".github/workflows/deploy-api.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore BordspelApp.Api/BordspelApp.Api.csproj
+
+      - name: Build
+        run: dotnet build BordspelApp.Api/BordspelApp.Api.csproj -c Release --no-restore
+
+      - name: Publish
+        run: dotnet publish BordspelApp.Api/BordspelApp.Api.csproj -c Release -o ./publish --no-build
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "bordspel-api"
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_API }}
+          package: ./publish
