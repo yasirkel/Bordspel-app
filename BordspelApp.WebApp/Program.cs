@@ -19,6 +19,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<BordspelAppDbContext>()
 .AddDefaultTokenProviders()
 .AddDefaultUI();
@@ -64,6 +65,33 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogWarning(ex, "Development DB repair failed.");
         }
+    }
+
+    // Optionally run the async DatabaseSeeder (creates Identity users and roles) when requested.
+    var config = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+    var runAsyncSeeder = env.IsDevelopment() || config.GetValue<bool>("SeedDatabase");
+    if (runAsyncSeeder)
+    {
+        logger.LogInformation("Running async DatabaseSeeder.SeedAsync (Development or SeedDatabase=true).");
+        try
+        {
+            // Call the async seeder and wait synchronously (we are in startup)
+            BordspelApp.Infrastructure.Data.DatabaseSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
+            logger.LogInformation("Async DatabaseSeeder completed.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Async DatabaseSeeder failed.");
+            throw;
+        }
+    }
+
+    // If user requested seeding only, exit without starting the web host
+    var seedOnly = config.GetValue<bool>("SeedDatabaseOnly") || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SeedDatabaseOnly"));
+    if (seedOnly)
+    {
+        logger.LogInformation("SeedDatabaseOnly set - exiting after seeding.");
+        return;
     }
 }
 

@@ -51,4 +51,21 @@ app.MapControllers();
 // Map GraphQL endpoint for Banana Cake Pop and GraphiQL
 app.MapGraphQL("/graphql");
 
+// Conditional development / opt-in seeding
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("SeedDatabase"))
+{
+    Console.WriteLine("[Seed] Starting database seeding (Development or SeedDatabase=true)...");
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        await BordspelApp.Infrastructure.Data.DatabaseSeeder.SeedAsync(scope.ServiceProvider);
+        Console.WriteLine("[Seed] Database seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Seed] Database seeding failed: {ex}");
+        throw;
+    }
+}
+
 app.Run();
