@@ -1,6 +1,8 @@
 using BordspelApp.Application.Interfaces;
 using BordspelApp.Domain.Entities;
+using BordspelApp.Api.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BordspelApp.Api.Controllers;
 
@@ -18,10 +20,44 @@ public class GameNightsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameNight>>> GetAll()
+    public async Task<ActionResult<IEnumerable<GameNightDto>>> GetAll()
     {
-        var gameNights = await _gameNightRepository.GetAllWithDetailsAsync();
-        return Ok(gameNights);
+        var query = _gameNightRepository.GetAllQueryable().AsNoTracking();
+
+        var projected = query.Select(gn => new GameNightDto
+        {
+            Id = gn.Id,
+            Title = gn.Title,
+            DateTime = gn.DateTime,
+            MaxPlayers = gn.MaxPlayers,
+            Is18Plus = gn.Is18Plus,
+            Organizer = gn.Organizer == null ? null : new PersonSummaryDto
+            {
+                Id = gn.Organizer.Id,
+                FirstName = gn.Organizer.FirstName,
+                LastName = gn.Organizer.LastName,
+                Email = gn.Organizer.Email
+            },
+            Players = gn.Players.Select(p => new PersonSummaryDto
+            {
+                Id = p.Person != null ? p.Person.Id : p.PersonId,
+                FirstName = p.Person != null ? p.Person.FirstName : null,
+                LastName = p.Person != null ? p.Person.LastName : null,
+                Email = p.Person != null ? p.Person.Email : null
+            }).ToList(),
+            BoardGames = gn.BoardGames.Select(bg => new BoardGameSummaryDto
+            {
+                Id = bg.BoardGame.Id,
+                Name = bg.BoardGame.Name
+            }).ToList(),
+            Street = gn.Address != null ? gn.Address.Street : null,
+            HouseNumber = gn.Address != null ? gn.Address.HouseNumber : null,
+            PostalCode = gn.Address != null ? gn.Address.PostalCode : null,
+            City = gn.Address != null ? gn.Address.City : null
+        });
+
+        var list = await projected.ToListAsync();
+        return Ok(list);
     }
 
     [HttpGet("{id}")]
