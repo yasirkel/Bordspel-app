@@ -12,6 +12,7 @@ builder.Services.AddControllersWithViews();
 
 // Bind Api options from configuration (appsettings / env vars)
 builder.Services.Configure<BordspelApp.WebApp.Configuration.ApiOptions>(builder.Configuration.GetSection("Api"));
+
 builder.Services.AddSingleton<BordspelApp.WebApp.Services.IApiBaseUrlProvider, BordspelApp.WebApp.Services.ApiBaseUrlProvider>();
 
 // Add DbContext
@@ -38,6 +39,7 @@ builder.Services.AddScoped<IGameNightService, BordspelApp.Infrastructure.Service
 builder.Services.AddScoped<IRegistrationService, BordspelApp.Infrastructure.Services.RegistrationService>();
 builder.Services.AddScoped<IBoardGameService, BordspelApp.Infrastructure.Services.BoardGameService>();
 builder.Services.AddScoped<IPersonService, BordspelApp.Infrastructure.Services.PersonService>();
+
 // HTTP client for calling API; base address is provided by ApiBaseUrlProvider
 builder.Services.AddHttpClient("api").ConfigureHttpClient((sp, client) =>
 {
@@ -49,40 +51,64 @@ builder.Services.AddHttpClient("api").ConfigureHttpClient((sp, client) =>
 
 var app = builder.Build();
 
-// Seed database
-using (var scope = app.Services.CreateScope())
+//
+// ✅ DB setup policy:
+// - Development: migrate + seed ok
+// - Production (Azure): DO NOT migrate/seed by default (prevents LocalDB/connection issues and startup crash)
+// - If you ever want to run it in Production ON PURPOSE: set App Setting RUN_DB_SETUP=true
+//
+var runDbSetup =
+    app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue<bool>("RUN_DB_SETUP") ||
+    string.Equals(Environment.GetEnvironmentVariable("RUN_DB_SETUP"), "true", StringComparison.OrdinalIgnoreCase);
+
+if (runDbSetup)
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
-    context.Database.Migrate();
-    DbSeeder.Seed(context);
+    var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Startup");
+    var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+    var config = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+
+    try
+    {
+        // Migrate + seed
+        context.Database.Migrate();
+        DbSeeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "DB migrate/seed failed.");
+        throw; // In dev you want a hard fail; in prod keep RUN_DB_SETUP off
+    }
 
     // Development-only: repair existing AspNetUsers.PersonId by matching Persons.Email
-    var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
-    var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Startup");
     if (env.IsDevelopment())
     {
         try
         {
             logger.LogInformation("Development DB repair: backfilling AspNetUsers.PersonId from Persons by email.");
-            var sql = @"UPDATE u SET PersonId = p.Id FROM AspNetUsers u JOIN Persons p ON p.Email = u.Email WHERE u.PersonId IS NULL;";
+            var sql = @"UPDATE u SET PersonId = p.Id
+                        FROM AspNetUsers u
+                        JOIN Persons p ON p.Email = u.Email
+                        WHERE u.PersonId IS NULL;";
             context.Database.ExecuteSqlRaw(sql);
             logger.LogInformation("DB repair executed.");
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             logger.LogWarning(ex, "Development DB repair failed.");
         }
     }
 
     // Optionally run the async DatabaseSeeder (creates Identity users and roles) when requested.
-    var config = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+    // NOTE: Keep it dev-only by default; enable with SeedDatabase=true (or RUN_DB_SETUP=true already)
     var runAsyncSeeder = env.IsDevelopment() || config.GetValue<bool>("SeedDatabase");
     if (runAsyncSeeder)
     {
         logger.LogInformation("Running async DatabaseSeeder.SeedAsync (Development or SeedDatabase=true).");
         try
         {
-            // Call the async seeder and wait synchronously (we are in startup)
             BordspelApp.Infrastructure.Data.DatabaseSeeder.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
             logger.LogInformation("Async DatabaseSeeder completed.");
         }
@@ -93,11 +119,15 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // If user requested seeding only, exit without starting the web host
-    var seedOnly = config.GetValue<bool>("SeedDatabaseOnly") || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SeedDatabaseOnly"));
-    if (seedOnly)
+    // SeedDatabaseOnly is dangerous in Production because it will stop the web host.
+    // Only respect it in Development.
+    var seedOnlyRequested =
+        config.GetValue<bool>("SeedDatabaseOnly") ||
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SeedDatabaseOnly"));
+
+    if (env.IsDevelopment() && seedOnlyRequested)
     {
-        logger.LogInformation("SeedDatabaseOnly set - exiting after seeding.");
+        logger.LogInformation("SeedDatabaseOnly set (Development) - exiting after seeding.");
         return;
     }
 }
@@ -119,6 +149,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.Run();
