@@ -2,14 +2,14 @@ name: Deploy WebApp to Azure
 
 on:
   push:
-    branches:
-      - release
+    branches: [ "release" ]
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: "8.0.x"
-  WEBAPP_PATH: "BordspelApp.WebApp/BordspelApp.WebApp.csproj"
+  WEBAPP_PROJECT: "BordspelApp.WebApp/BordspelApp.WebApp.csproj"
   AZURE_WEBAPP_NAME: "bordspel-app"
+  PUBLISH_DIR: "publish"
 
 jobs:
   build-and-deploy:
@@ -25,17 +25,21 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore ${{ env.WEBAPP_PATH }}
+        run: dotnet restore "${{ env.WEBAPP_PROJECT }}"
 
       - name: Build
-        run: dotnet build ${{ env.WEBAPP_PATH }} -c Release --no-restore
+        run: dotnet build "${{ env.WEBAPP_PROJECT }}" -c Release --no-restore
 
       - name: Publish
-        run: dotnet publish ${{ env.WEBAPP_PATH }} -c Release -o ./publish --no-build
+        run: dotnet publish "${{ env.WEBAPP_PROJECT }}" -c Release -o "${{ env.PUBLISH_DIR }}" --no-build
 
-      - name: Deploy to Azure Web App
+      # (optioneel maar handig) toon wat er gepublished is
+      - name: List publish output
+        run: ls -la "${{ env.PUBLISH_DIR }}"
+
+      - name: Deploy to Azure Web App (Publish Profile)
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./publish
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_WEB }}
+          package: ${{ env.PUBLISH_DIR }}

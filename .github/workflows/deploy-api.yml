@@ -1,15 +1,11 @@
-name: Deploy WebApp to Azure
+name: Deploy API to Azure Web App
 
 on:
   push:
     branches: [ "release" ]
-  workflow_dispatch:
-
-env:
-  DOTNET_VERSION: "8.0.x"
-  WEBAPP_PROJECT: "BordspelApp.WebApp/BordspelApp.WebApp.csproj"
-  AZURE_WEBAPP_NAME: "bordspel-app"
-  PUBLISH_DIR: "publish"
+    paths:
+      - "BordspelApp.Api/**"
+      - ".github/workflows/deploy-api.yml"
 
 jobs:
   build-and-deploy:
@@ -22,20 +18,20 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore ${{ env.WEBAPP_PROJECT }}
+        run: dotnet restore BordspelApp.Api/BordspelApp.Api.csproj
 
       - name: Build
-        run: dotnet build ${{ env.WEBAPP_PROJECT }} -c Release --no-restore
+        run: dotnet build BordspelApp.Api/BordspelApp.Api.csproj -c Release --no-restore
 
       - name: Publish
-        run: dotnet publish ${{ env.WEBAPP_PROJECT }} -c Release -o ${{ env.PUBLISH_DIR }} --no-build
+        run: dotnet publish BordspelApp.Api/BordspelApp.Api.csproj -c Release -o ./publish --no-build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_WEB }}
-          package: ${{ env.PUBLISH_DIR }}
+          app-name: "bordspel-api"
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_API }}
+          package: ./publish
