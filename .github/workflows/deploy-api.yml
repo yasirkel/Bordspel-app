@@ -2,7 +2,7 @@ name: Deploy API to Azure Web App
 
 on:
   push:
-    branches: [ "master", "development", "main" ]
+    branches: [ "release" ]
     paths:
       - "BordspelApp.Api/**"
       - ".github/workflows/deploy-api.yml"

@@ -10,6 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Bind Api options from configuration (appsettings / env vars)
+builder.Services.Configure<BordspelApp.WebApp.Configuration.ApiOptions>(builder.Configuration.GetSection("Api"));
+builder.Services.AddSingleton<BordspelApp.WebApp.Services.IApiBaseUrlProvider, BordspelApp.WebApp.Services.ApiBaseUrlProvider>();
+
 // Add DbContext
 builder.Services.AddDbContext<BordspelAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -34,10 +38,13 @@ builder.Services.AddScoped<IGameNightService, BordspelApp.Infrastructure.Service
 builder.Services.AddScoped<IRegistrationService, BordspelApp.Infrastructure.Services.RegistrationService>();
 builder.Services.AddScoped<IBoardGameService, BordspelApp.Infrastructure.Services.BoardGameService>();
 builder.Services.AddScoped<IPersonService, BordspelApp.Infrastructure.Services.PersonService>();
-// HTTP client for calling local API GraphQL endpoint
-builder.Services.AddHttpClient("api", client =>
+// HTTP client for calling API; base address is provided by ApiBaseUrlProvider
+builder.Services.AddHttpClient("api").ConfigureHttpClient((sp, client) =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "http://localhost:5247/");
+    var provider = sp.GetRequiredService<BordspelApp.WebApp.Services.IApiBaseUrlProvider>();
+    var baseUrl = provider.GetBaseUrl();
+    if (!baseUrl.EndsWith("/")) baseUrl += "/";
+    client.BaseAddress = new Uri(baseUrl);
 });
 
 var app = builder.Build();

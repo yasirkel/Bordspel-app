@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -69,6 +71,16 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            var production = @Env.IsProduction().ToString().ToLower();
+            var apiFromEnv = "" + @Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Configuration["API_BASE_URL"] ?? ""));
+            var apiFromConfig = "" + @Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(Configuration["Api:BaseUrl"] ?? ""));
+            var apiBase = apiFromEnv || apiFromConfig || "http://localhost:5247/";
+            window.environment = { production: production, apiBaseUrl: apiBase };
+            if(!production) console.log("Chosen API base:", window.environment.apiBaseUrl);
+        })();
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
