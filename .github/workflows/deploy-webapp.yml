@@ -24,6 +24,21 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      # EF migrations are applied by the deployment pipeline, not by WebApp startup.
+      # Configure AZURE_SQL_CONNECTION_STRING as a GitHub Actions secret before enabling release deployments.
+      - name: Install Entity Framework CLI
+        run: dotnet tool install --global dotnet-ef --version 8.0.32
+
+      - name: Apply database migrations
+        env:
+          AZURE_SQL_CONNECTION_STRING: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+        run: >-
+          dotnet ef database update
+          --project BordspelApp.Infrastructure/BordspelApp.Infrastructure.csproj
+          --startup-project BordspelApp.WebApp/BordspelApp.WebApp.csproj
+          --configuration Release
+          --connection "$AZURE_SQL_CONNECTION_STRING"
+
       - name: Restore
         run: dotnet restore "${{ env.WEBAPP_PROJECT }}"
 

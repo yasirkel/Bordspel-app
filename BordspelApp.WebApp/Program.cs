@@ -54,7 +54,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
-    context.Database.Migrate();
     DbSeeder.Seed(context);
 
     // Development-only: repair existing AspNetUsers.PersonId by matching Persons.Email

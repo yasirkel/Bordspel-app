@@ -1,4 +1,4 @@
-@model BordspelApp.Domain.Entities.GameNight
+@model BordspelApp.WebApp.Models.GameNightDetailsViewModel
 @{
     ViewData["Title"] = "Spelavond verwijderen";
 }
@@ -8,9 +8,9 @@
 </div>
 <dl class="row">
     <dt class="col-sm-2">Datum</dt>
-    <dd class="col-sm-10">@Model.DateTime.ToString("f")</dd>
+    <dd class="col-sm-10">@Model.StartAt.ToString("f")</dd>
     <dt class="col-sm-2">Organisator</dt>
-    <dd class="col-sm-10">@Model.Organizer.FullName</dd>
+    <dd class="col-sm-10">@Model.OrganizerName</dd>
 </dl>
 <form asp-action="Delete" method="post">
     <button class="btn btn-danger" type="submit">Verwijderen</button>

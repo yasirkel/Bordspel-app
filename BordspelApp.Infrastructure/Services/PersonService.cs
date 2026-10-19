@@ -78,7 +78,7 @@ public class PersonService : IPersonService
 
         person.FirstName = dto.FirstName;
         person.LastName = dto.LastName;
-        person.Email = dto.Email;
+        person.Email = dto.Email ?? person.Email;
         
         // Update dietary preferences
         person.DietaryRequirements.IsLactoseFree = dto.LactoseFree;

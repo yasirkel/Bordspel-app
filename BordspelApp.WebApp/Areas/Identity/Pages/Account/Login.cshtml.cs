@@ -27,30 +27,31 @@ public class LoginModel : PageModel
     }
 
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = new();
 
-    public string ReturnUrl { get; set; }
+    public string ReturnUrl { get; set; } = string.Empty;
 
     public class InputModel
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
     }
 
-    public async Task OnGetAsync(string returnUrl = null)
+    public Task OnGetAsync(string? returnUrl = null)
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
+        return Task.CompletedTask;
     }
 
-    public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         returnUrl ??= Url.Content("~/");
 
@@ -70,7 +71,9 @@ public class LoginModel : PageModel
             {
                 try
                 {
-                    var person = await _personRepository.GetByEmailAsync(user.Email);
+                    var person = string.IsNullOrWhiteSpace(user.Email)
+                        ? null
+                        : await _personRepository.GetByEmailAsync(user.Email);
                     if (person != null)
                     {
                         user.PersonId = person.Id;

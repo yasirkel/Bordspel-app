@@ -241,8 +241,9 @@ public class GameNightsController : Controller
 
         if (!ModelState.IsValid)
         {
-            var errors = ModelState.Where(kvp => kvp.Value.Errors.Count>0)
-                .Select(kvp => new { Key = kvp.Key, Errors = kvp.Value.Errors.Select(e=>e.ErrorMessage) });
+            var errors = ModelState
+                .Where(kvp => kvp.Value?.Errors.Count > 0)
+                .Select(kvp => new { Key = kvp.Key, Errors = kvp.Value!.Errors.Select(e => e.ErrorMessage) });
             foreach(var e in errors) _logger.LogWarning("ModelState error: {Key} -> {Errors}", e.Key, string.Join(";", e.Errors));
 
             var boardGames = await _boardGameService.GetAllAsync();
@@ -607,7 +608,7 @@ public class GameNightsController : Controller
         var email = User.FindFirstValue(ClaimTypes.Email);
 
         // If no email claim, try to get it from the Identity user
-        ApplicationUser identityUser = null;
+        ApplicationUser? identityUser = null;
         if (string.IsNullOrEmpty(email))
         {
             identityUser = await _userManager.GetUserAsync(User);
