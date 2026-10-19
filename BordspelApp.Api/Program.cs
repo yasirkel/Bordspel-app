@@ -139,3 +139,11 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("SeedDat
 Console.WriteLine("JSON IgnoreCycles enabled ✅");
 
 app.Run();
+
+namespace BordspelApp.Api
+{
+    // Public entry point for WebApplicationFactory-based integration tests.
+    public partial class Program
+    {
+    }
+}

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BordspelApp.Api\BordspelApp.Api.csproj" />
     <ProjectReference Include="..\BordspelApp.Domain\BordspelApp.Domain.csproj" />
     <ProjectReference Include="..\BordspelApp.Application\BordspelApp.Application.csproj" />
     <ProjectReference Include="..\BordspelApp.Infrastructure\BordspelApp.Infrastructure.csproj" />

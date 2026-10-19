@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.WebApp", "Bords
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.Api", "BordspelApp.Api\BordspelApp.Api.csproj", "{B566F7AC-1450-4CAC-BD01-020492B772F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.Tests", "BordspelApp.Tests\BordspelApp.Tests.csproj", "{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{B566F7AC-1450-4CAC-BD01-020492B772F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B566F7AC-1450-4CAC-BD01-020492B772F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B566F7AC-1450-4CAC-BD01-020492B772F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
