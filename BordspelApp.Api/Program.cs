@@ -10,12 +10,12 @@ using HotChocolate;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var envConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-           ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
-           ?? Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection");
-var cfgConn = builder.Configuration.GetConnectionString("DefaultConnection");
-var rawConn = !string.IsNullOrWhiteSpace(envConn) ? envConn : cfgConn ?? string.Empty;
-var containsLocalDb = rawConn.IndexOf("(localdb)", StringComparison.OrdinalIgnoreCase) >= 0 || rawConn.IndexOf("mssqllocaldb", StringComparison.OrdinalIgnoreCase) >= 0;
+var domainConnection = builder.Configuration.GetConnectionString("DomainConnection") ?? string.Empty;
+var identityConnection = builder.Configuration.GetConnectionString("IdentityConnection") ?? string.Empty;
+var containsLocalDb = domainConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase)
+    || domainConnection.Contains("mssqllocaldb", StringComparison.OrdinalIgnoreCase)
+    || identityConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase)
+    || identityConnection.Contains("mssqllocaldb", StringComparison.OrdinalIgnoreCase);
 
 // Guard: fail fast in Production when still configured to LocalDB
 if (builder.Environment.IsProduction() && containsLocalDb)
@@ -47,14 +47,17 @@ builder.Services.AddGraphQLServer()
 
 // Add DbContext
 builder.Services.AddDbContext<BordspelAppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DomainConnection")));
+
+builder.Services.AddDbContext<BordspelAppIdentityDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
 
 // Identity - register UserManager/RoleManager so the async seeder can run from the API if desired
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
-    .AddEntityFrameworkStores<BordspelAppDbContext>()
+    .AddEntityFrameworkStores<BordspelAppIdentityDbContext>()
     .AddDefaultTokenProviders();
 
 // Add Repositories

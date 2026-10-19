@@ -6,6 +6,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
+    <Compile Include="Migrations\Domain\**\*.cs" />
+    <Compile Include="Migrations\Identity\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.32" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.32">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

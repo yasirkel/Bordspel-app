@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BordspelApp.Infrastructure.Migrations
 {
-    [DbContext(typeof(BordspelAppDbContext))]
+    [DbContext(typeof(LegacyBordspelAppDbContext))]
     [Migration("20251021112835_InitialCreate")]
     partial class InitialCreate
     {

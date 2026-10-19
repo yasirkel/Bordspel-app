@@ -7,6 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var domainConnection = builder.Configuration.GetConnectionString("DomainConnection") ?? string.Empty;
+var identityConnection = builder.Configuration.GetConnectionString("IdentityConnection") ?? string.Empty;
+var containsLocalDb = domainConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase)
+    || domainConnection.Contains("mssqllocaldb", StringComparison.OrdinalIgnoreCase)
+    || identityConnection.Contains("(localdb)", StringComparison.OrdinalIgnoreCase)
+    || identityConnection.Contains("mssqllocaldb", StringComparison.OrdinalIgnoreCase);
+
+if (builder.Environment.IsProduction() && containsLocalDb)
+{
+    throw new PlatformNotSupportedException("Application is running in Production but one of the configured database connections points to LocalDB. Configure separate Azure SQL connection strings for DomainConnection and IdentityConnection.");
+}
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -16,7 +28,10 @@ builder.Services.AddSingleton<BordspelApp.WebApp.Services.IApiBaseUrlProvider, B
 
 // Add DbContext
 builder.Services.AddDbContext<BordspelAppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DomainConnection")));
+
+builder.Services.AddDbContext<BordspelAppIdentityDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
 
 // Identity
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
@@ -24,7 +39,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<BordspelAppDbContext>()
+.AddEntityFrameworkStores<BordspelAppIdentityDbContext>()
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
@@ -58,23 +73,8 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
     DbSeeder.Seed(context);
 
-    // Development-only: repair existing AspNetUsers.PersonId by matching Persons.Email
     var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
     var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Startup");
-    if (env.IsDevelopment())
-    {
-        try
-        {
-            logger.LogInformation("Development DB repair: backfilling AspNetUsers.PersonId from Persons by email.");
-            var sql = @"UPDATE u SET PersonId = p.Id FROM AspNetUsers u JOIN Persons p ON p.Email = u.Email WHERE u.PersonId IS NULL;";
-            context.Database.ExecuteSqlRaw(sql);
-            logger.LogInformation("DB repair executed.");
-        }
-        catch (System.Exception ex)
-        {
-            logger.LogWarning(ex, "Development DB repair failed.");
-        }
-    }
 
     // Optionally run the async DatabaseSeeder (creates Identity users and roles) when requested.
     var config = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BordspelApp.Infrastructure.Migrations
 {
-    [DbContext(typeof(BordspelAppDbContext))]
+    [DbContext(typeof(LegacyBordspelAppDbContext))]
     partial class BordspelAppDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

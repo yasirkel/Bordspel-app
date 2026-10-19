@@ -1,12 +1,10 @@
 using BordspelApp.Domain.Entities;
 using BordspelApp.Domain.ValueObjects;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using BordspelApp.Infrastructure.Identity;
 
 namespace BordspelApp.Infrastructure.Data;
 
-public class BordspelAppDbContext : IdentityDbContext<ApplicationUser>
+public class BordspelAppDbContext : DbContext
 {
     public BordspelAppDbContext(DbContextOptions<BordspelAppDbContext> options)
         : base(options)
@@ -22,17 +20,6 @@ public class BordspelAppDbContext : IdentityDbContext<ApplicationUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        // ApplicationUser ↔ Person (optional link)
-        modelBuilder.Entity<ApplicationUser>(entity =>
-        {
-            entity.HasOne(u => u.Person)
-                .WithMany()
-                .HasForeignKey(u => u.PersonId)
-                .OnDelete(DeleteBehavior.SetNull);
-        });
-
         // Person Configuration
         modelBuilder.Entity<Person>(entity =>
         {
