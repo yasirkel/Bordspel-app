@@ -24,6 +24,7 @@ public class GameNightDetailsDto
     public bool HasNutFree { get; set; }
     public bool HasVegetarian { get; set; }
     public bool HasAlcoholFree { get; set; }
+    public bool IsPotluck { get; set; }
     
     // Players
     public List<PlayerDto> Players { get; set; } = new();
@@ -32,6 +33,7 @@ public class GameNightDetailsDto
     
     // Board Games
     public List<BoardGameSimpleDto> BoardGames { get; set; } = new();
+    public List<PotluckItemDto> PotluckItems { get; set; } = new();
 }
 
 public class PlayerDto

@@ -48,6 +48,10 @@
         </fieldset>
         <fieldset class="border p-3 mb-3">
             <legend class="w-auto">Opties eten/drinken</legend>
+            <div class="form-check mb-2">
+                <input class="form-check-input" asp-for="IsPotluck" />
+                <label class="form-check-label" asp-for="IsPotluck">Potluckavond: deelnemers nemen zelf eten of drinken mee</label>
+            </div>
             <div class="form-check">
                 <input class="form-check-input" asp-for="HasLactoseFree" />
                 <label class="form-check-label" asp-for="HasLactoseFree"></label>

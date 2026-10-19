@@ -32,12 +32,14 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IBoardGameRepository, BoardGameRepository>();
 builder.Services.AddScoped<IGameNightRepository, GameNightRepository>();
+builder.Services.AddScoped<IPotluckRepository, PotluckRepository>();
 
 // Services
 builder.Services.AddScoped<IGameNightService, BordspelApp.Infrastructure.Services.GameNightService>();
 builder.Services.AddScoped<IRegistrationService, BordspelApp.Infrastructure.Services.RegistrationService>();
 builder.Services.AddScoped<IBoardGameService, BordspelApp.Infrastructure.Services.BoardGameService>();
 builder.Services.AddScoped<IPersonService, BordspelApp.Infrastructure.Services.PersonService>();
+builder.Services.AddScoped<IPotluckService, BordspelApp.Infrastructure.Services.PotluckService>();
 
 // HTTP client for calling API; base address is provided by ApiBaseUrlProvider
 builder.Services.AddHttpClient("api").ConfigureHttpClient((sp, client) =>

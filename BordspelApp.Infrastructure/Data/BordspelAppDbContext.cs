@@ -18,6 +18,7 @@ public class BordspelAppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<GameNight> GameNights { get; set; }
     public DbSet<GameNightPlayer> GameNightPlayers { get; set; }
     public DbSet<GameNightBoardGame> GameNightBoardGames { get; set; }
+    public DbSet<PotluckItem> PotluckItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +83,22 @@ public class BordspelAppDbContext : IdentityDbContext<ApplicationUser>
                 address.Property(a => a.HouseNumber).HasMaxLength(10);
                 address.Property(a => a.City).HasMaxLength(100);
             });
+        });
+
+        modelBuilder.Entity<PotluckItem>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Description).IsRequired().HasMaxLength(200);
+
+            entity.HasOne(item => item.GameNight)
+                .WithMany(gameNight => gameNight.PotluckItems)
+                .HasForeignKey(item => item.GameNightId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(item => item.Person)
+                .WithMany()
+                .HasForeignKey(item => item.PersonId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // GameNightPlayer (Many-to-Many junction table)

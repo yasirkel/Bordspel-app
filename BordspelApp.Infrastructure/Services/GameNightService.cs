@@ -136,6 +136,7 @@ public class GameNightService : IGameNightService
                 .ThenInclude(p => p.Person)
             .Include(gn => gn.BoardGames)
                 .ThenInclude(gnbg => gnbg.BoardGame)
+            .Include(gn => gn.PotluckItems)
             .FirstOrDefaultAsync(gn => gn.Id == id);
 
         if (gameNight == null) return null;
@@ -158,6 +159,7 @@ public class GameNightService : IGameNightService
             HasNutFree = gameNight.HasNutFreeOption,
             HasVegetarian = gameNight.HasVegetarianOption,
             HasAlcoholFree = gameNight.HasAlcoholFreeOption,
+            IsPotluck = gameNight.IsPotluck,
             Players = gameNight.Players.Select(p => new PlayerDto
             {
                 PersonId = p.PersonId,
@@ -171,6 +173,15 @@ public class GameNightService : IGameNightService
                 Type = gnbg.BoardGame.Type.ToString(),
                 Is18Plus = gnbg.BoardGame.Is18Plus,
                 ImageUrl = gnbg.BoardGame.PhotoUrl
+            }).ToList(),
+            PotluckItems = gameNight.PotluckItems.Select(item => new PotluckItemDto
+            {
+                Id = item.Id,
+                Description = item.Description,
+                IsLactoseFree = item.IsLactoseFree,
+                IsNutFree = item.IsNutFree,
+                IsVegetarian = item.IsVegetarian,
+                IsAlcoholFree = item.IsAlcoholFree
             }).ToList()
         };
     }
@@ -192,6 +203,7 @@ public class GameNightService : IGameNightService
         gameNight.HasNutFreeOption = dto.HasNutFree;
         gameNight.HasVegetarianOption = dto.HasVegetarian;
         gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
+        gameNight.IsPotluck = dto.IsPotluck;
 
         // Add board games
         var boardGames = await _boardGameRepository.GetAllQueryable()
@@ -240,6 +252,7 @@ public class GameNightService : IGameNightService
         gameNight.HasNutFreeOption = dto.HasNutFree;
         gameNight.HasVegetarianOption = dto.HasVegetarian;
         gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
+        gameNight.IsPotluck = dto.IsPotluck;
 
         // Update board games
         gameNight.BoardGames.Clear();

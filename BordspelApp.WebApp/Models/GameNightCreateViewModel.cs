@@ -42,6 +42,7 @@ public class GameNightCreateViewModel
     public bool HasNutFree { get; set; }
     public bool HasVegetarian { get; set; }
     public bool HasAlcoholFree { get; set; }
+    public bool IsPotluck { get; set; }
     
     // Alias properties for view compatibility
     public bool HasLactoseFreeOption 

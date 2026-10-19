@@ -23,10 +23,12 @@ public class GameNight
     public bool HasNutFreeOption { get; set; }
     public bool HasVegetarianOption { get; set; }
     public bool HasAlcoholFreeOption { get; set; }
+    public bool IsPotluck { get; set; }
 
     // Navigation properties
     public ICollection<GameNightPlayer> Players { get; set; } = new List<GameNightPlayer>();
     public ICollection<GameNightBoardGame> BoardGames { get; set; } = new List<GameNightBoardGame>();
+    public ICollection<PotluckItem> PotluckItems { get; set; } = new List<PotluckItem>();
 
     // Parameterless constructor for EF Core
     public GameNight()

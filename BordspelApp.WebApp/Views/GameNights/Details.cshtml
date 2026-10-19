@@ -192,6 +192,71 @@
                     </div>
                 </div>
             }
+
+            @if (Model.IsPotluck)
+            {
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-cookie-bite text-primary"></i> Potluckavond
+                        </h5>
+                        <p class="text-muted">Deelnemers nemen zelf eten of drinken mee. Hieronder zie je wat er al wordt meegenomen.</p>
+
+                        @if (Model.PotluckItems.Any())
+                        {
+                            <div class="list-group mb-3">
+                                @foreach (var item in Model.PotluckItems)
+                                {
+                                    <div class="list-group-item">
+                                        <strong>@item.Description</strong>
+                                        <div class="small text-muted mt-1">
+                                            Eigenschappen:
+                                            @(item.IsLactoseFree ? "lactosevrij" : "niet als lactosevrij opgegeven") ·
+                                            @(item.IsNutFree ? "notenvrij" : "niet als notenvrij opgegeven") ·
+                                            @(item.IsVegetarian ? "vegetarisch" : "niet als vegetarisch opgegeven") ·
+                                            @(item.IsAlcoholFree ? "alcoholvrij" : "niet als alcoholvrij opgegeven")
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">Er zijn nog geen items geregistreerd.</p>
+                        }
+
+                        @if (Model.IsUserRegistered)
+                        {
+                            <form asp-action="AddPotluckItem" asp-route-id="@Model.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <div class="mb-2">
+                                    <label for="Description" class="form-label">Wat neem je mee?</label>
+                                    <input id="Description" name="Description" class="form-control" maxlength="200" required />
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 form-check">
+                                        <input id="IsLactoseFree" name="IsLactoseFree" type="checkbox" class="form-check-input" value="true" />
+                                        <label for="IsLactoseFree" class="form-check-label">Lactosevrij</label>
+                                    </div>
+                                    <div class="col-md-6 form-check">
+                                        <input id="IsNutFree" name="IsNutFree" type="checkbox" class="form-check-input" value="true" />
+                                        <label for="IsNutFree" class="form-check-label">Notenvrij</label>
+                                    </div>
+                                    <div class="col-md-6 form-check">
+                                        <input id="IsVegetarian" name="IsVegetarian" type="checkbox" class="form-check-input" value="true" />
+                                        <label for="IsVegetarian" class="form-check-label">Vegetarisch</label>
+                                    </div>
+                                    <div class="col-md-6 form-check">
+                                        <input id="IsAlcoholFree" name="IsAlcoholFree" type="checkbox" class="form-check-input" value="true" />
+                                        <label for="IsAlcoholFree" class="form-check-label">Alcoholvrij</label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Item toevoegen</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="col-lg-4">

@@ -24,6 +24,7 @@ public class GameNightDetailsViewModel
     public bool HasNutFree { get; set; }
     public bool HasVegetarian { get; set; }
     public bool HasAlcoholFree { get; set; }
+    public bool IsPotluck { get; set; }
     
     // Players
     public List<PlayerViewModel> Players { get; set; } = new();
@@ -32,6 +33,7 @@ public class GameNightDetailsViewModel
     
     // Board Games
     public List<BoardGameCardViewModel> BoardGames { get; set; } = new();
+    public List<PotluckItemViewModel> PotluckItems { get; set; } = new();
     
     // User state
     public bool IsUserRegistered { get; set; }
@@ -53,4 +55,24 @@ public class BoardGameCardViewModel
     public string Type { get; set; } = string.Empty;
     public bool Is18Plus { get; set; }
     public string? ImageUrl { get; set; }
+}
+
+public class PotluckItemViewModel
+{
+    public string Description { get; set; } = string.Empty;
+    public bool IsLactoseFree { get; set; }
+    public bool IsNutFree { get; set; }
+    public bool IsVegetarian { get; set; }
+    public bool IsAlcoholFree { get; set; }
+}
+
+public class PotluckItemInputModel
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Vul minimaal één item in.")]
+    [System.ComponentModel.DataAnnotations.StringLength(200)]
+    public string Description { get; set; } = string.Empty;
+    public bool IsLactoseFree { get; set; }
+    public bool IsNutFree { get; set; }
+    public bool IsVegetarian { get; set; }
+    public bool IsAlcoholFree { get; set; }
 }

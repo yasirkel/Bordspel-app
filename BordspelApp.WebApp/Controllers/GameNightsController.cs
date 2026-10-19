@@ -21,6 +21,7 @@ public class GameNightsController : Controller
     private readonly IPersonService _personService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IPersonRepository _personRepository;
+    private readonly IPotluckService _potluckService;
     private readonly Microsoft.Extensions.Logging.ILogger<GameNightsController> _logger;
 
     public GameNightsController(
@@ -30,6 +31,7 @@ public class GameNightsController : Controller
         IPersonService personService,
         UserManager<ApplicationUser> userManager,
         IPersonRepository personRepository,
+        IPotluckService potluckService,
         Microsoft.Extensions.Logging.ILogger<GameNightsController> logger)
     {
         _gameNightService = gameNightService;
@@ -38,6 +40,7 @@ public class GameNightsController : Controller
         _personService = personService;
         _userManager = userManager;
         _personRepository = personRepository;
+        _potluckService = potluckService;
         _logger = logger;
     }
 
@@ -177,6 +180,7 @@ public class GameNightsController : Controller
             HasNutFree = gameNight.HasNutFree,
             HasVegetarian = gameNight.HasVegetarian,
             HasAlcoholFree = gameNight.HasAlcoholFree,
+            IsPotluck = gameNight.IsPotluck,
             Players = gameNight.Players.Select(p => new PlayerViewModel
             {
                 PersonId = p.PersonId,
@@ -190,6 +194,14 @@ public class GameNightsController : Controller
                 Type = bg.Type,
                 Is18Plus = bg.Is18Plus,
                 ImageUrl = bg.ImageUrl
+            }).ToList(),
+            PotluckItems = gameNight.PotluckItems.Select(item => new PotluckItemViewModel
+            {
+                Description = item.Description,
+                IsLactoseFree = item.IsLactoseFree,
+                IsNutFree = item.IsNutFree,
+                IsVegetarian = item.IsVegetarian,
+                IsAlcoholFree = item.IsAlcoholFree
             }).ToList(),
             IsUserRegistered = isRegistered,
             CanUserRegister = personId.HasValue && !isRegistered && !gameNight.IsFull,
@@ -284,7 +296,8 @@ public class GameNightsController : Controller
             HasLactoseFree = model.HasLactoseFree,
             HasNutFree = model.HasNutFree,
             HasVegetarian = model.HasVegetarian,
-            HasAlcoholFree = model.HasAlcoholFree
+            HasAlcoholFree = model.HasAlcoholFree,
+            IsPotluck = model.IsPotluck
         };
 
         var success = await _gameNightService.CreateAsync(dto, model.SelectedBoardGameIds);
@@ -345,6 +358,7 @@ public class GameNightsController : Controller
             HasNutFree = gameNight.HasNutFree,
             HasVegetarian = gameNight.HasVegetarian,
             HasAlcoholFree = gameNight.HasAlcoholFree,
+            IsPotluck = gameNight.IsPotluck,
             SelectedBoardGameIds = gameNight.BoardGames.Select(bg => bg.Id).ToList(),
             AvailableBoardGames = boardGames.Select(bg => new BoardGameSelectionItem
             {
@@ -417,7 +431,8 @@ public class GameNightsController : Controller
             HasLactoseFree = model.HasLactoseFree,
             HasNutFree = model.HasNutFree,
             HasVegetarian = model.HasVegetarian,
-            HasAlcoholFree = model.HasAlcoholFree
+            HasAlcoholFree = model.HasAlcoholFree,
+            IsPotluck = model.IsPotluck
         };
 
         var success = await _gameNightService.UpdateAsync(dto, model.SelectedBoardGameIds);
@@ -598,6 +613,43 @@ public class GameNightsController : Controller
         {
             TempData["Error"] = "Er ging iets mis bij het uitschrijven.";
         }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    // POST: /GameNights/AddPotluckItem/5
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddPotluckItem(int id, PotluckItemInputModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Vul minimaal één meegenomen eten- of drinkitem in.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var personId = await GetCurrentPersonIdAsync();
+        if (personId == null)
+        {
+            TempData["Error"] = "Geen gekoppelde gebruiker gevonden.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var item = await _potluckService.AddItemAsync(new PotluckItemCreateDto
+        {
+            GameNightId = id,
+            PersonId = personId.Value,
+            Description = model.Description,
+            IsLactoseFree = model.IsLactoseFree,
+            IsNutFree = model.IsNutFree,
+            IsVegetarian = model.IsVegetarian,
+            IsAlcoholFree = model.IsAlcoholFree
+        });
+
+        TempData[item == null ? "Error" : "Success"] = item == null
+            ? "Je moet deelnemer zijn om een potluckitem toe te voegen."
+            : "Je potluckitem is toegevoegd.";
 
         return RedirectToAction(nameof(Details), new { id });
     }

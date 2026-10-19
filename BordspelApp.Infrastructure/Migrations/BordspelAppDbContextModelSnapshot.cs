@@ -17,7 +17,7 @@ namespace BordspelApp.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "8.0.32")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -85,6 +85,9 @@ namespace BordspelApp.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("Is18Plus")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPotluck")
                         .HasColumnType("bit");
 
                     b.Property<int>("MaxPlayers")
@@ -172,6 +175,46 @@ namespace BordspelApp.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Persons");
+                });
+
+            modelBuilder.Entity("BordspelApp.Domain.Entities.PotluckItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("GameNightId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAlcoholFree")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLactoseFree")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsNutFree")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVegetarian")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameNightId");
+
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("PotluckItems");
                 });
 
             modelBuilder.Entity("BordspelApp.Infrastructure.Identity.ApplicationUser", b =>
@@ -531,6 +574,25 @@ namespace BordspelApp.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BordspelApp.Domain.Entities.PotluckItem", b =>
+                {
+                    b.HasOne("BordspelApp.Domain.Entities.GameNight", "GameNight")
+                        .WithMany("PotluckItems")
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BordspelApp.Domain.Entities.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GameNight");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("BordspelApp.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.HasOne("BordspelApp.Domain.Entities.Person", "Person")
@@ -602,6 +664,8 @@ namespace BordspelApp.Infrastructure.Migrations
                     b.Navigation("BoardGames");
 
                     b.Navigation("Players");
+
+                    b.Navigation("PotluckItems");
                 });
 
             modelBuilder.Entity("BordspelApp.Domain.Entities.Person", b =>
