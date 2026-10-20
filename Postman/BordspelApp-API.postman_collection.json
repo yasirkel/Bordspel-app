@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "BordspelApp API",
+    "description": "REST RMM2 and GraphQL smoke tests. Login stores the Identity cookie in the Postman cookie jar; no token copy/paste is required.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5091" },
+    { "key": "gameNightId", "value": "1" },
+    { "key": "loginEmail", "value": "" },
+    { "key": "loginPassword", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', function () { pm.response.to.have.status(200); });", "pm.test('Identity cookie is returned', function () { pm.expect(pm.cookies.has('.AspNetCore.Identity.Application')).to.be.true; });"] } }]
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Logout succeeds', function () { pm.response.to.have.status(204); });"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Public collections",
+      "item": [
+        {
+          "name": "List game nights",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights", "host": ["{{baseUrl}}"], "path": ["api", "gamenights"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns game nights', function () { pm.response.to.have.status(200); });", "pm.test('Response is a collection', function () { pm.expect(pm.response.json()).to.be.an('array'); });"] } }]
+        },
+        {
+          "name": "List upcoming game nights",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights/upcoming", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "upcoming"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns upcoming game nights', function () { pm.response.to.have.status(200); });"] } }]
+        },
+        {
+          "name": "List board games",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/boardgames", "host": ["{{baseUrl}}"], "path": ["api", "boardgames"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns board games', function () { pm.response.to.have.status(200); });"] } }]
+        },
+        {
+          "name": "Get game night",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Game night exists', function () { pm.response.to.have.status(200); });"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Authenticated actions",
+      "item": [
+        {
+          "name": "Join current user",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}", "players"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Join returns an expected business response', function () { pm.expect([200, 400, 404]).to.include(pm.response.code); });"] } }]
+        },
+        {
+          "name": "Create game night as current user",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman test night\",\n  \"description\": \"Temporary assessment test\",\n  \"dateTime\": \"2030-01-01T19:00:00Z\",\n  \"maxPlayers\": 4,\n  \"address\": { \"street\": \"Teststraat\", \"houseNumber\": \"1\", \"city\": \"Breda\", \"postalCode\": \"4811AA\" },\n  \"isPotluck\": true,\n  \"boardGameIds\": [1]\n}" }, "url": { "raw": "{{baseUrl}}/api/gamenights", "host": ["{{baseUrl}}"], "path": ["api", "gamenights"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create is accepted or rejected by a business rule', function () { pm.expect([201, 400, 403]).to.include(pm.response.code); });", "if (pm.response.code === 201) { pm.environment.set('createdGameNightId', pm.response.json().id); }"] } }]
+        }
+      ]
+    },
+    {
+      "name": "GraphQL",
+      "item": [
+        {
+          "name": "List game nights and board games",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ gameNights { id title dateTime organizerName boardGames { id name genre } } boardGames { id name genre } }\"\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('GraphQL succeeds', function () { pm.response.to.have.status(200); });", "pm.test('GraphQL has no errors', function () { pm.expect(pm.response.json().errors).to.be.undefined; });"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Expected failures",
+      "item": [
+        {
+          "name": "Join without authentication",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}", "players"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Unauthenticated mutation is rejected', function () { pm.expect([401, 403]).to.include(pm.response.code); });"] } }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+using BordspelApp.Api.DTOs;
+using BordspelApp.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BordspelApp.Api.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+public sealed class AuthController : ControllerBase
+{
+    private readonly SignInManager<ApplicationUser> _signInManager;
+
+    public AuthController(SignInManager<ApplicationUser> signInManager)
+    {
+        _signInManager = signInManager;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginRequest request)
+    {
+        var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, true);
+        if (result.IsLockedOut)
+        {
+            return StatusCode(StatusCodes.Status423Locked, new { message = "Account is temporarily locked." });
+        }
+
+        if (!result.Succeeded)
+        {
+            return Unauthorized(new { message = "Invalid credentials." });
+        }
+
+        return Ok(new { message = "Authenticated. The Identity cookie is active for this client." });
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return NoContent();
+    }
+}

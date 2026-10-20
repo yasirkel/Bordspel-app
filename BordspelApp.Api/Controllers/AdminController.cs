@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using BordspelApp.Infrastructure.Identity;
 using BordspelApp.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BordspelApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class AdminController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;

@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 using HotChocolate;
 using BordspelApp.Application.Interfaces;
 using BordspelApp.Api.GraphQL.Models;
+using BordspelApp.Api.Services;
+using BordspelApp.Infrastructure.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace BordspelApp.Api.GraphQL;
 
@@ -11,9 +15,14 @@ public class Query
 {
     // Returns DTOs for all game nights with related board games. Uses repository
     // GetAllWithDetailsAsync() which eagerly loads related navigations.
-    public async Task<IEnumerable<GameNightDto>> GetGameNights([Service] IGameNightRepository repo)
+    public async Task<IEnumerable<GameNightDto>> GetGameNights([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
-        var gameNights = await repo.GetAllWithDetailsAsync();
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var gameNights = await context.GameNights
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.BoardGames).ThenInclude(bg => bg.BoardGame)
+            .ToListAsync();
 
         return gameNights.Select(gn => new GameNightDto
         {
@@ -33,10 +42,42 @@ public class Query
         });
     }
 
-    // Recommend game nights to a person based on overlap with their co-players.
-    public async Task<IEnumerable<RecommendationDto>> GetRecommendedGameNights([Service] IGameNightRepository repo, int personId, int limit = 6)
+    public async Task<IEnumerable<BoardGameDto>> GetBoardGames([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
-        var all = (await repo.GetAllWithDetailsAsync()).Where(gn => gn.DateTime > DateTime.Now).ToList();
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var games = await context.BoardGames.AsNoTracking().ToListAsync();
+        return games.Select(game => new BoardGameDto
+        {
+            Id = game.Id,
+            Name = game.Name,
+            Genre = game.Genre.ToString()
+        });
+    }
+
+    // Recommend game nights to a person based on overlap with their co-players.
+    public async Task<IEnumerable<RecommendationDto>> GetRecommendedGameNights(
+        [Service] IDbContextFactory<BordspelAppDbContext> contextFactory,
+        [Service] CurrentUserAccessor currentUser,
+        [Service] IHttpContextAccessor httpContextAccessor,
+        int limit = 6)
+    {
+        if (httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated != true)
+        {
+            throw new GraphQLException("Authentication is required for recommendations.");
+        }
+
+        var personId = await currentUser.GetPersonIdAsync(httpContextAccessor.HttpContext.User);
+        if (personId is null) throw new GraphQLException("The authenticated user is not linked to a person.");
+        limit = Math.Clamp(limit, 1, 25);
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var all = (await context.GameNights
+            .AsNoTracking()
+            .Include(gn => gn.Organizer)
+            .Include(gn => gn.Players)
+            .Include(gn => gn.BoardGames).ThenInclude(bg => bg.BoardGame)
+            .ToListAsync())
+            .Where(gn => gn.DateTime > DateTime.Now)
+            .ToList();
 
         // Nights the person already participates in
         var myNights = all.Where(gn => gn.Players.Any(p => p.PersonId == personId)).ToList();

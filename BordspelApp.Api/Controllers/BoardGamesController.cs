@@ -1,6 +1,7 @@
 using BordspelApp.Application.Interfaces;
 using BordspelApp.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BordspelApp.Api.Controllers;
 
@@ -40,6 +41,7 @@ public class BoardGamesController : ControllerBase
         return Ok(boardGames);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<BoardGame>> Create(BoardGame boardGame)
     {
@@ -47,6 +49,7 @@ public class BoardGamesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, BoardGame boardGame)
     {
@@ -59,6 +62,7 @@ public class BoardGamesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

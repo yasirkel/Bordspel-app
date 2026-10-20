@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using BordspelApp.Api.GraphQL;
 using HotChocolate;
+using Microsoft.OpenApi.Models;
+using BordspelApp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,14 +22,33 @@ var containsLocalDb = domainConnection.Contains("(localdb)", StringComparison.Or
 // Guard: fail fast in Production when still configured to LocalDB
 if (builder.Environment.IsProduction() && containsLocalDb)
 {
-    throw new PlatformNotSupportedException("Application is running in Production but the configured DefaultConnection points to LocalDB which is unsupported on Azure. Set the connection string in Azure (Connection strings or App Settings) to your Azure SQL instance (ConnectionStrings__DefaultConnection) and restart.");
+    throw new PlatformNotSupportedException("Production requires separate Azure SQL connections for DomainConnection and IdentityConnection.");
 }
 
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("IdentityCookie", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Name = ".AspNetCore.Identity.Application",
+        Description = "Authenticate with POST /api/auth/login."
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "IdentityCookie" }
+        }] = Array.Empty<string>()
+    });
+});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserAccessor>();
+builder.Services.AddAuthorization();
 
 // Configure JSON options for minimal API responses as well
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -46,7 +67,7 @@ builder.Services.AddGraphQLServer()
     .AddType<BordspelApp.Api.GraphQL.Models.RecommendationDto>();
 
 // Add DbContext
-builder.Services.AddDbContext<BordspelAppDbContext>(options =>
+builder.Services.AddDbContextFactory<BordspelAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DomainConnection")));
 
 builder.Services.AddDbContext<BordspelAppIdentityDbContext>(options =>
@@ -59,6 +80,20 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<BordspelAppIdentityDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
 
 // Add Repositories
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
