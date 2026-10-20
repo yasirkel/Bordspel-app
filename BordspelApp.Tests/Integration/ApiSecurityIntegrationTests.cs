@@ -1,17 +1,22 @@
 using System;
 using System.Net;
 using System.Net.Http.Json;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using BordspelApp.Infrastructure.Identity;
+using BordspelApp.Tests.TestHelpers;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace BordspelApp.Tests.Integration;
 
-public sealed class ApiSecurityIntegrationTests : IClassFixture<WebApplicationFactory<BordspelApp.Api.Program>>
+public sealed class ApiSecurityIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<BordspelApp.Api.Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public ApiSecurityIntegrationTests(WebApplicationFactory<BordspelApp.Api.Program> factory)
+    public ApiSecurityIntegrationTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }
@@ -47,8 +52,26 @@ public sealed class ApiSecurityIntegrationTests : IClassFixture<WebApplicationFa
     [Fact]
     public async Task AuthenticatedUser_CannotJoinAsAnotherPerson()
     {
-        var testPassword = Environment.GetEnvironmentVariable("BORDSPELAPP_TEST_PASSWORD");
-        if (string.IsNullOrWhiteSpace(testPassword)) return;
+        var testPassword = $"T-{Guid.NewGuid():N}!aA1";
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByEmailAsync("api-test@example.com");
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = "api-test@example.com",
+                    Email = "api-test@example.com",
+                    EmailConfirmed = true,
+                    PersonId = 1
+                };
+                var createResult = await userManager.CreateAsync(user, testPassword);
+                Assert.True(createResult.Succeeded, string.Join("; ", createResult.Errors.Select(error => error.Description)));
+            }
+            Assert.True(await userManager.CheckPasswordAsync(user, testPassword));
+        }
 
         using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
         {
@@ -58,10 +81,11 @@ public sealed class ApiSecurityIntegrationTests : IClassFixture<WebApplicationFa
 
         var login = await client.PostAsJsonAsync("/api/auth/login", new
         {
-            email = "alice.dewit@example.com",
+            email = "api-test@example.com",
             password = testPassword
         });
-        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var loginBody = await login.Content.ReadAsStringAsync();
+        Assert.True(login.StatusCode == HttpStatusCode.OK, $"Login failed with {login.StatusCode}: {loginBody}");
 
         var response = await client.PostAsync("/api/GameNights/1/join/2", null);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

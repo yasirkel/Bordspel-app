@@ -1,15 +1,16 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using BordspelApp.Tests.TestHelpers;
 using Xunit;
 
 namespace BordspelApp.Tests.Integration;
 
-public class GameNightsIntegrationTests : IClassFixture<WebApplicationFactory<BordspelApp.Api.Program>>
+public class GameNightsIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<BordspelApp.Api.Program> _factory;
+    private readonly TestWebApplicationFactory _factory;
 
-    public GameNightsIntegrationTests(WebApplicationFactory<BordspelApp.Api.Program> factory)
+    public GameNightsIntegrationTests(TestWebApplicationFactory factory)
     {
         _factory = factory;
     }

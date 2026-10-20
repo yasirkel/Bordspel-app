@@ -4,12 +4,22 @@ on:
   push:
     branches: [ "release" ]
     paths:
+      - "BordspelApp.sln"
+      - "BordspelApp.Domain/**"
+      - "BordspelApp.Application/**"
+      - "BordspelApp.Infrastructure/**"
       - "BordspelApp.Api/**"
       - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout
@@ -21,10 +31,45 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore BordspelApp.Api/BordspelApp.Api.csproj
+        run: dotnet restore BordspelApp.sln
 
       - name: Build
-        run: dotnet build BordspelApp.Api/BordspelApp.Api.csproj -c Release --no-restore
+        run: dotnet build BordspelApp.sln -c Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test BordspelApp.sln -c Release --no-build --no-restore --logger "trx;LogFileName=api-deployment-tests.trx"
+
+      # Migrations are executed in the deployment pipeline, never from Program.cs.
+      # The WebApp workflow owns the same two migration steps; the shared
+      # concurrency group prevents these release workflows from running at once.
+      - name: Install Entity Framework CLI
+        run: dotnet tool install --global dotnet-ef --version 8.0.32
+
+      - name: Apply domain database migrations
+        env:
+          AZURE_DOMAIN_SQL_CONNECTION_STRING: ${{ secrets.AZURE_DOMAIN_SQL_CONNECTION_STRING }}
+        run: >-
+          test -n "$AZURE_DOMAIN_SQL_CONNECTION_STRING"
+          &&
+          dotnet ef database update
+          --context BordspelAppDbContext
+          --project BordspelApp.Infrastructure/BordspelApp.Infrastructure.csproj
+          --startup-project BordspelApp.WebApp/BordspelApp.WebApp.csproj
+          --configuration Release
+          --connection "$AZURE_DOMAIN_SQL_CONNECTION_STRING"
+
+      - name: Apply Identity database migrations
+        env:
+          AZURE_IDENTITY_SQL_CONNECTION_STRING: ${{ secrets.AZURE_IDENTITY_SQL_CONNECTION_STRING }}
+        run: >-
+          test -n "$AZURE_IDENTITY_SQL_CONNECTION_STRING"
+          &&
+          dotnet ef database update
+          --context BordspelAppIdentityDbContext
+          --project BordspelApp.Infrastructure/BordspelApp.Infrastructure.csproj
+          --startup-project BordspelApp.WebApp/BordspelApp.WebApp.csproj
+          --configuration Release
+          --connection "$AZURE_IDENTITY_SQL_CONNECTION_STRING"
 
       - name: Publish
         run: dotnet publish BordspelApp.Api/BordspelApp.Api.csproj -c Release -o ./publish --no-build
@@ -33,5 +78,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: "bordspel-api"
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_API }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
           package: ./publish

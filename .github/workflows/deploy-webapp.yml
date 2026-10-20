@@ -3,7 +3,18 @@ name: Deploy WebApp to Azure
 on:
   push:
     branches: [ "release" ]
+    paths:
+      - "BordspelApp.sln"
+      - "BordspelApp.Domain/**"
+      - "BordspelApp.Application/**"
+      - "BordspelApp.Infrastructure/**"
+      - "BordspelApp.WebApp/**"
+      - ".github/workflows/deploy-webapp.yml"
   workflow_dispatch:
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
 
 env:
   DOTNET_VERSION: "8.0.x"
@@ -14,6 +25,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout
@@ -32,10 +44,18 @@ jobs:
       - name: Install Entity Framework CLI
         run: dotnet tool install --global dotnet-ef --version 8.0.32
 
+      - name: Build solution
+        run: dotnet build BordspelApp.sln -c Release --no-restore --warnaserror
+
+      - name: Test solution
+        run: dotnet test BordspelApp.sln -c Release --no-build --no-restore --logger "trx;LogFileName=webapp-deployment-tests.trx"
+
       - name: Apply domain database migrations
         env:
           AZURE_DOMAIN_SQL_CONNECTION_STRING: ${{ secrets.AZURE_DOMAIN_SQL_CONNECTION_STRING }}
         run: >-
+          test -n "$AZURE_DOMAIN_SQL_CONNECTION_STRING"
+          &&
           dotnet ef database update
           --context BordspelAppDbContext
           --project BordspelApp.Infrastructure/BordspelApp.Infrastructure.csproj
@@ -47,15 +67,14 @@ jobs:
         env:
           AZURE_IDENTITY_SQL_CONNECTION_STRING: ${{ secrets.AZURE_IDENTITY_SQL_CONNECTION_STRING }}
         run: >-
+          test -n "$AZURE_IDENTITY_SQL_CONNECTION_STRING"
+          &&
           dotnet ef database update
           --context BordspelAppIdentityDbContext
           --project BordspelApp.Infrastructure/BordspelApp.Infrastructure.csproj
           --startup-project BordspelApp.WebApp/BordspelApp.WebApp.csproj
           --configuration Release
           --connection "$AZURE_IDENTITY_SQL_CONNECTION_STRING"
-
-      - name: Build
-        run: dotnet build "${{ env.WEBAPP_PROJECT }}" -c Release --no-restore
 
       - name: Publish
         run: dotnet publish "${{ env.WEBAPP_PROJECT }}" -c Release -o "${{ env.PUBLISH_DIR }}" --no-build

@@ -21,7 +21,13 @@ public sealed class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, true);
+        var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Invalid credentials." });
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
         if (result.IsLockedOut)
         {
             return StatusCode(StatusCodes.Status423Locked, new { message = "Account is temporarily locked." });
@@ -31,6 +37,8 @@ public sealed class AuthController : ControllerBase
         {
             return Unauthorized(new { message = "Invalid credentials." });
         }
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
 
         return Ok(new { message = "Authenticated. The Identity cookie is active for this client." });
     }
