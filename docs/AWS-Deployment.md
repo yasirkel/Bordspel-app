@@ -83,7 +83,7 @@ Op de EC2-host draait `bordspelapp-ghcr-pull.timer` iedere vijf minuten. `deploy
 
 De database wordt niet teruggerold bij een applicatierollback. EF-migraties moeten daarom backward-compatible zijn; er worden geen destructieve resetacties uitgevoerd. Als EC2 gestopt is, draait de timer niet en verandert er niets. Na het starten controleert de timer de nieuwste volledig geslaagde build.
 
-Na bewezen werking wordt de oude OIDC-deployjob uitgeschakeld; de aparte GHCR-workflow is dan de enige automatische deploymentroute.
+De oude AWS OIDC-deployjob is uitgeschakeld. De GHCR-workflow is de enige automatische deploymentroute; er is geen AWS OIDC, permanente AWS access key of publiek SSH vanaf GitHub Actions nodig.
 
 ## Lokale controle
 
