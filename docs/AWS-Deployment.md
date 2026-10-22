@@ -58,14 +58,9 @@ De workflow haalt op de EC2-host bij iedere deployment eerst de branch op. Daard
 
 Gebruik een beperkte role met alleen ECR push en SSM deployment naar de specifieke instance.
 
-Vereiste repository secrets:
+De workflow bevat voor deze ene assessment-host de niet-geheime waarden voor de OIDC-role, instance-ID en publieke health-URL's. De OIDC-role zelf bevat de branch/environment-beperking; er wordt geen private key of AWS access key gebruikt. Verplaats deze waarden desgewenst later naar repository variables, maar zet geen credentials in Git.
 
-- `AWS_ROLE_TO_ASSUME`
-- `EC2_INSTANCE_ID`
-- `PUBLIC_WEBAPP_URL`
-- `PUBLIC_API_URL`
-
-Zet repository variable `AWS_DEPLOY_ENABLED` pas op `true` nadat de host, OIDC role, ECR-repositories en `.env` gecontroleerd zijn. Zonder deze variable draait alleen CI; er wordt dan niet gedeployed.
+Deployment staat voor deze assessment-branch standaard aan zodra de OIDC-role en host zijn voorbereid. Zet repository variable `AWS_DEPLOY_ENABLED` op `false` om deployment tijdelijk te pauzeren; CI blijft dan builden en testen.
 
 ## Lokale controle
 

@@ -26,6 +26,10 @@ concurrency:
 
 env:
   AWS_REGION: eu-north-1
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::669242775579:role/BordspelApp-GitHubActions-Role
+  EC2_INSTANCE_ID: i-01352978121da42b2
+  PUBLIC_WEBAPP_URL: https://web.13.60.219.216.sslip.io
+  PUBLIC_API_URL: https://api.13.60.219.216.sslip.io
   ECR_API_REPOSITORY: bordspelapp-api
   ECR_WEBAPP_REPOSITORY: bordspelapp-webapp
   ECR_MIGRATOR_REPOSITORY: bordspelapp-migrator
@@ -69,8 +73,8 @@ jobs:
 
   deploy:
     needs: verify-and-build
-    # Enable only after EC2, OIDC, ECR and the host .env have been prepared.
-    if: ${{ vars.AWS_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/fix/assessment-completion' }}
+    # Deploy this assessment branch by default; set AWS_DEPLOY_ENABLED=false to pause deployment.
+    if: ${{ vars.AWS_DEPLOY_ENABLED != 'false' && github.ref == 'refs/heads/fix/assessment-completion' }}
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -84,13 +88,11 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           role-session-name: github-actions-bordspelapp
 
       - name: Check EC2 state
         id: instance
-        env:
-          EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
         run: |
           test -n "$EC2_INSTANCE_ID"
           state=$(aws ec2 describe-instances --instance-ids "$EC2_INSTANCE_ID" --query 'Reservations[0].Instances[0].State.Name' --output text)
@@ -132,7 +134,6 @@ jobs:
         if: steps.instance.outputs.deployable == 'true'
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
-          EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
         run: |
           test -n "$EC2_INSTANCE_ID"
           jq -n \
@@ -150,8 +151,8 @@ jobs:
       - name: Verify public health endpoints
         if: steps.instance.outputs.deployable == 'true'
         env:
-          WEBAPP_URL: ${{ secrets.PUBLIC_WEBAPP_URL }}
-          API_URL: ${{ secrets.PUBLIC_API_URL }}
+          WEBAPP_URL: ${{ env.PUBLIC_WEBAPP_URL }}
+          API_URL: ${{ env.PUBLIC_API_URL }}
         run: |
           test -n "$WEBAPP_URL" && test -n "$API_URL"
           curl --fail --show-error --silent --retry 10 --retry-delay 5 "$WEBAPP_URL/health"
