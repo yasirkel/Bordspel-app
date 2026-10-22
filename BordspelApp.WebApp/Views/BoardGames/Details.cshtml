@@ -17,12 +17,12 @@
         <div class="col-md-4">
             @if (!string.IsNullOrEmpty(Model.ImageUrl))
             {
-                <img src="@Model.ImageUrl" class="img-fluid rounded shadow" alt="@Model.Name">
+                <img src="@Model.ImageUrl" class="img-fluid rounded shadow" alt="@Model.Name" onerror="this.onerror=null;this.src='/images/boardgames/boardgame-placeholder.svg';">
             }
             else
             {
                 <div class="bg-secondary rounded shadow d-flex align-items-center justify-content-center" style="height: 400px;">
-                    <i class="fas fa-dice-d20 fa-5x text-white-50"></i>
+                    <img src="/images/boardgames/boardgame-placeholder.svg" class="w-100 h-100" alt="Geen afbeelding beschikbaar" style="object-fit: cover;">
                 </div>
             }
         </div>

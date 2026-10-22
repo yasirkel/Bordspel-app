@@ -141,12 +141,12 @@
                                     <div class="card h-100">
                                         @if (!string.IsNullOrEmpty(game.ImageUrl))
                                         {
-                                            <img src="@game.ImageUrl" class="card-img-top" alt="@game.Name" style="height: 150px; object-fit: cover;">
+                                            <img src="@game.ImageUrl" class="card-img-top" alt="@game.Name" style="height: 150px; object-fit: cover;" onerror="this.onerror=null;this.src='/images/boardgames/boardgame-placeholder.svg';">
                                         }
                                         else
                                         {
                                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
-                                                <i class="fas fa-dice-d20 fa-3x text-white-50"></i>
+                                            <img src="/images/boardgames/boardgame-placeholder.svg" class="w-100 h-100" alt="Geen afbeelding beschikbaar" style="object-fit: cover;">
                                             </div>
                                         }
                                         <div class="card-body">

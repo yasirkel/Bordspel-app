@@ -3,12 +3,12 @@
 <div class="card h-100 shadow-sm">
     @if (!string.IsNullOrEmpty(Model.ImageUrl))
     {
-        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="height: 200px; object-fit: cover;" />
+        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="height: 200px; object-fit: cover;" onerror="this.onerror=null;this.src='/images/boardgames/boardgame-placeholder.svg';" />
     }
     else
     {
         <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-            <i class="fas fa-dice fa-3x text-muted"></i>
+            <img src="/images/boardgames/boardgame-placeholder.svg" class="w-100 h-100" alt="Geen afbeelding beschikbaar" style="object-fit: cover;">
         </div>
     }
     

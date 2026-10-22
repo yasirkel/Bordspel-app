@@ -95,6 +95,12 @@ public static class AssessmentDataSeeder
                 domain.BoardGames.Add(game);
                 await domain.SaveChangesAsync(cancellationToken);
             }
+            else if (!string.Equals(game.PhotoUrl, seed.PhotoUrl, StringComparison.Ordinal))
+            {
+                // Keep existing board games and relationships, but repair their image URL.
+                game.PhotoUrl = seed.PhotoUrl;
+                await domain.SaveChangesAsync(cancellationToken);
+            }
 
             games[seed.Name] = game;
         }
@@ -254,11 +260,11 @@ public static class AssessmentDataSeeder
 
     private static IReadOnlyCollection<BoardGameSeed> GetBoardGames() => new[]
     {
-        new BoardGameSeed("Catan", "Strategy to build settlements", GameGenre.Strategy, GameType.Board, false, "https://images.unsplash.com/photo-1545239351-1141bd82e8a6"),
-        new BoardGameSeed("Pandemic", "Cooperative world-saving game", GameGenre.Cooperative, GameType.Board, false, "https://images.unsplash.com/photo-1515879218367-8466d910aaa4"),
-        new BoardGameSeed("Cards of Fate", "Card game for adults", GameGenre.Card, GameType.Card, true, "https://images.unsplash.com/photo-1523528283118-2f8d1f3b4f7f"),
-        new BoardGameSeed("Azul", "Tactical tile drafting with colorful patterns", GameGenre.Strategy, GameType.Tile, false, "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09"),
-        new BoardGameSeed("Ticket to Ride", "Build railway routes across a changing map", GameGenre.Family, GameType.Board, false, "https://images.unsplash.com/photo-1606503153255-59d8b8b82186"),
-        new BoardGameSeed("Dixit", "A creative storytelling card game", GameGenre.Party, GameType.Card, false, "https://images.unsplash.com/photo-1606167668584-78701c57f13d")
+        new BoardGameSeed("Catan", "Strategy to build settlements", GameGenre.Strategy, GameType.Board, false, "/images/boardgames/catan.svg"),
+        new BoardGameSeed("Pandemic", "Cooperative world-saving game", GameGenre.Cooperative, GameType.Board, false, "/images/boardgames/pandemic.svg"),
+        new BoardGameSeed("Cards of Fate", "Card game for adults", GameGenre.Card, GameType.Card, true, "/images/boardgames/cards-of-fate.svg"),
+        new BoardGameSeed("Azul", "Tactical tile drafting with colorful patterns", GameGenre.Strategy, GameType.Tile, false, "/images/boardgames/azul.svg"),
+        new BoardGameSeed("Ticket to Ride", "Build railway routes across a changing map", GameGenre.Family, GameType.Board, false, "/images/boardgames/ticket-to-ride.svg"),
+        new BoardGameSeed("Dixit", "A creative storytelling card game", GameGenre.Party, GameType.Card, false, "/images/boardgames/dixit.svg")
     };
 }
