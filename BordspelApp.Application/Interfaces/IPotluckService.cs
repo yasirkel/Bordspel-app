@@ -4,8 +4,8 @@ namespace BordspelApp.Application.Interfaces;
 
 public interface IPotluckService
 {
-    /// <summary>Registreert een item voor een deelnemer.</summary>
+    // Registreert een item voor een deelnemer.
     Task<PotluckItemDto?> AddItemAsync(PotluckItemCreateDto dto);
-    /// <summary>Haalt alle items van een spelavond op.</summary>
+    // Haalt alle items van een spelavond op.
     Task<IReadOnlyList<PotluckItemDto>> GetItemsAsync(int gameNightId);
 }

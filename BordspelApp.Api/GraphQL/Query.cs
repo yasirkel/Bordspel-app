@@ -13,7 +13,7 @@ namespace BordspelApp.Api.GraphQL;
 
 public class Query
 {
-    /// <summary>Leest alle spelavonden met hun organisator en bordspellen uit de domeindatabase.</summary>
+    // Leest alle spelavonden met hun organisator en bordspellen uit de domeindatabase.
     public async Task<IEnumerable<GameNightDto>> GetGameNights([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -41,7 +41,7 @@ public class Query
         });
     }
 
-    /// <summary>Leest alle bordspellen uit de domeindatabase voor de GraphQL-query.</summary>
+    // Leest alle bordspellen uit de domeindatabase voor de GraphQL-query.
     public async Task<IEnumerable<BoardGameDto>> GetBoardGames([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -55,7 +55,7 @@ public class Query
     }
 
     // Recommend game nights to a person based on overlap with their co-players.
-    /// <summary>Geeft toekomstige avonden aan die aansluiten bij eerdere medespelers.</summary>
+    // Geeft toekomstige avonden aan die aansluiten bij eerdere medespelers.
     public async Task<IEnumerable<RecommendationDto>> GetRecommendedGameNights(
         [Service] IDbContextFactory<BordspelAppDbContext> contextFactory,
         [Service] CurrentUserAccessor currentUser,

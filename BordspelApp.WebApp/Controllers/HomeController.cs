@@ -23,7 +23,7 @@ public class HomeController : Controller
         _personService = personService;
     }
 
-    /// <summary>Toont de homepage met openbare en aanbevolen spelavonden.</summary>
+    // Toont de homepage met openbare en aanbevolen spelavonden.
     public async Task<IActionResult> Index()
     {
         // Load a few upcoming game nights from the database for the home page
@@ -131,14 +131,14 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
-    /// <summary>Toont de privacy-informatie van de applicatie.</summary>
+    // Toont de privacy-informatie van de applicatie.
     public IActionResult Privacy()
     {
         return View();
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    /// <summary>Toont een gebruiksvriendelijke foutpagina zonder technische details.</summary>
+    // Toont een gebruiksvriendelijke foutpagina zonder technische details.
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

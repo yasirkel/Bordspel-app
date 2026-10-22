@@ -111,14 +111,14 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
         }
 
 
-        /// <summary>Bereidt het registratieformulier en externe loginopties voor.</summary>
+        // Bereidt het registratieformulier en externe loginopties voor.
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
-        /// <summary>Maakt een Identity-account en het gekoppelde domeinprofiel aan.</summary>
+        // Maakt een Identity-account en het gekoppelde domeinprofiel aan.
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");

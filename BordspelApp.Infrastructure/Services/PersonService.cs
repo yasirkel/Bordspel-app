@@ -14,7 +14,7 @@ public class PersonService : IPersonService
         _personRepository = personRepository;
     }
 
-    /// <summary>Haalt een profiel met adres en dieetvoorkeuren op basis van het ID op.</summary>
+    // Haalt een profiel met adres en dieetvoorkeuren op basis van het ID op.
     public async Task<PersonDto?> GetByIdAsync(int id)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -42,7 +42,7 @@ public class PersonService : IPersonService
         };
     }
 
-    /// <summary>Haalt een profiel op via het e-mailadres van de gekoppelde gebruiker.</summary>
+    // Haalt een profiel op via het e-mailadres van de gekoppelde gebruiker.
     public async Task<PersonDto?> GetByEmailAsync(string email)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -70,7 +70,7 @@ public class PersonService : IPersonService
         };
     }
 
-    /// <summary>Werk profielgegevens, dieetvoorkeuren en adres bij.</summary>
+    // Werk profielgegevens, dieetvoorkeuren en adres bij.
     public async Task<bool> UpdateProfileAsync(PersonDto dto)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -116,7 +116,7 @@ public class PersonService : IPersonService
         return true;
     }
 
-    /// <summary>Bereken de actuele leeftijd van een persoon.</summary>
+    // Bereken de actuele leeftijd van een persoon.
     public async Task<int> GetAgeAsync(int personId)
     {
         var person = await _personRepository.GetAllQueryable()

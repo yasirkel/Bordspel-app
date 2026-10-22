@@ -46,7 +46,7 @@ public class GameNight
         OrganizerId = organizerId;
     }
 
-    /// <summary>Voegt een bordspel toe en maakt de koppeling met deze spelavond.</summary>
+    // Voegt een bordspel toe en maakt de koppeling met deze spelavond.
     public void AddBoardGame(BoardGame boardGame)
     {
         BoardGames.Add(new GameNightBoardGame
@@ -57,19 +57,19 @@ public class GameNight
         });
     }
 
-    /// <summary>Bepaalt opnieuw of de avond 18+ is op basis van de gekozen spellen.</summary>
+    // Bepaalt opnieuw of de avond 18+ is op basis van de gekozen spellen.
     public void Recalculate18Plus()
     {
         Is18Plus = BoardGames.Any(gn => gn.BoardGame.Is18Plus);
     }
 
-    /// <summary>Controleert of het maximale aantal deelnemers is bereikt.</summary>
+    // Controleert of het maximale aantal deelnemers is bereikt.
     public bool IsFull()
     {
         return Players.Count >= MaxPlayers;
     }
 
-    /// <summary>Controleert alle domeinregels waaraan een nieuwe deelnemer moet voldoen.</summary>
+    // Controleert alle domeinregels waaraan een nieuwe deelnemer moet voldoen.
     public bool CanPersonJoin(Person person)
     {
         if (IsFull())
@@ -96,13 +96,13 @@ public class GameNight
         return true;
     }
 
-    /// <summary>Controleert of de gekoppelde organisator oud genoeg is om te organiseren.</summary>
+    // Controleert of de gekoppelde organisator oud genoeg is om te organiseren.
     public bool IsOrganizerValid()
     {
         return Organizer.CanOrganizeGameNight();
     }
 
-    /// <summary>Controleert of de spelavond in de toekomst plaatsvindt.</summary>
+    // Controleert of de spelavond in de toekomst plaatsvindt.
     public bool IsDateValid()
     {
         return DateTime > DateTime.Now;

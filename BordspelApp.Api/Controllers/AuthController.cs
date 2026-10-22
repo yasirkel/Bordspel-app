@@ -19,7 +19,7 @@ public sealed class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("login")]
-    /// <summary>Controleert de Identity-inloggegevens en zet een authenticatiecookie.</summary>
+    // Controleert de Identity-inloggegevens en zet een authenticatiecookie.
     public async Task<IActionResult> Login(LoginRequest request)
     {
         var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
@@ -46,7 +46,7 @@ public sealed class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("logout")]
-    /// <summary>Verwijdert de actieve Identity-authenticatiecookie.</summary>
+    // Verwijdert de actieve Identity-authenticatiecookie.
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();

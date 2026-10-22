@@ -17,7 +17,7 @@ public class BoardGamesController : ControllerBase
     }
 
     [HttpGet]
-    /// <summary>Geeft alle bordspellen terug; deze route is openbaar leesbaar.</summary>
+    // Geeft alle bordspellen terug; deze route is openbaar leesbaar.
     public async Task<ActionResult<IEnumerable<BoardGame>>> GetAll()
     {
         var boardGames = await _boardGameRepository.GetAllAsync();
@@ -25,7 +25,7 @@ public class BoardGamesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    /// <summary>Geeft één bordspel terug of HTTP 404 als het niet bestaat.</summary>
+    // Geeft één bordspel terug of HTTP 404 als het niet bestaat.
     public async Task<ActionResult<BoardGame>> GetById(int id)
     {
         var boardGame = await _boardGameRepository.GetByIdAsync(id);
@@ -37,7 +37,7 @@ public class BoardGamesController : ControllerBase
     }
 
     [HttpGet("adult")]
-    /// <summary>Geeft alleen bordspellen terug die als 18+ zijn gemarkeerd.</summary>
+    // Geeft alleen bordspellen terug die als 18+ zijn gemarkeerd.
     public async Task<ActionResult<IEnumerable<BoardGame>>> GetAdultGames()
     {
         var boardGames = await _boardGameRepository.GetAdultGamesAsync();
@@ -46,7 +46,7 @@ public class BoardGamesController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    /// <summary>Maakt als beheerder een nieuw bordspel aan.</summary>
+    // Maakt als beheerder een nieuw bordspel aan.
     public async Task<ActionResult<BoardGame>> Create(BoardGame boardGame)
     {
         var created = await _boardGameRepository.AddAsync(boardGame);
@@ -55,7 +55,7 @@ public class BoardGamesController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
-    /// <summary>Wijzigt als beheerder een bestaand bordspel.</summary>
+    // Wijzigt als beheerder een bestaand bordspel.
     public async Task<IActionResult> Update(int id, BoardGame boardGame)
     {
         if (id != boardGame.Id)
@@ -69,7 +69,7 @@ public class BoardGamesController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
-    /// <summary>Verwijdert als beheerder een bordspel op basis van het ID.</summary>
+    // Verwijdert als beheerder een bordspel op basis van het ID.
     public async Task<IActionResult> Delete(int id)
     {
         await _boardGameRepository.DeleteAsync(id);

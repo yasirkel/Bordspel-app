@@ -4,8 +4,8 @@ namespace BordspelApp.Application.Interfaces;
 
 public interface IBoardGameService
 {
-    /// <summary>Haalt de bordspellen voor een overzicht op.</summary>
+    // Haalt de bordspellen voor een overzicht op.
     Task<IEnumerable<BoardGameSimpleDto>> GetAllAsync();
-    /// <summary>Haalt één bordspel met toekomstige spelavonden op.</summary>
+    // Haalt één bordspel met toekomstige spelavonden op.
     Task<BoardGameDto?> GetDetailsAsync(int id);
 }

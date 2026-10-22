@@ -4,12 +4,12 @@ namespace BordspelApp.Application.Interfaces;
 
 public interface IPersonService
 {
-    /// <summary>Haalt een profiel op via het ID.</summary>
+    // Haalt een profiel op via het ID.
     Task<PersonDto?> GetByIdAsync(int id);
-    /// <summary>Haalt een profiel op via e-mailadres.</summary>
+    // Haalt een profiel op via e-mailadres.
     Task<PersonDto?> GetByEmailAsync(string email);
-    /// <summary>Werkt een profiel met adres en dieetvoorkeuren bij.</summary>
+    // Werkt een profiel met adres en dieetvoorkeuren bij.
     Task<bool> UpdateProfileAsync(PersonDto dto);
-    /// <summary>Geeft de actuele leeftijd van een persoon terug.</summary>
+    // Geeft de actuele leeftijd van een persoon terug.
     Task<int> GetAgeAsync(int personId);
 }

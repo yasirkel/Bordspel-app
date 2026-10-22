@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BordspelApp.Infrastructure.Data;
 
-/// <summary>
-/// Expliciete, idempotente seed voor de gedeelde demonstratieomgeving.
-/// Deze seed wordt bewust niet vanuit WebApp- of API-startup uitgevoerd.
-/// </summary>
+// Expliciete, idempotente seed voor de gedeelde demonstratieomgeving;
+// deze wordt bewust niet vanuit WebApp- of API-startup uitgevoerd.
 public static class AssessmentDataSeeder
 {
     private sealed record PersonSeed(

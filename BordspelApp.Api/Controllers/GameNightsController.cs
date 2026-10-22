@@ -27,7 +27,7 @@ public class GameNightsController : ControllerBase
     }
 
     [HttpGet]
-    /// <summary>Geeft alle spelavonden met organisator, deelnemers en spellen terug.</summary>
+    // Geeft alle spelavonden met organisator, deelnemers en spellen terug.
     public async Task<ActionResult<IEnumerable<GameNightDto>>> GetAll()
     {
         var query = _gameNightRepository.GetAllQueryable().AsNoTracking();
@@ -69,7 +69,7 @@ public class GameNightsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    /// <summary>Geeft de volledige details van één spelavond terug.</summary>
+    // Geeft de volledige details van één spelavond terug.
     public async Task<ActionResult<GameNight>> GetById(int id)
     {
         var gameNight = await _gameNightRepository.GetByIdWithDetailsAsync(id);
@@ -81,7 +81,7 @@ public class GameNightsController : ControllerBase
     }
 
     [HttpGet("upcoming")]
-    /// <summary>Geeft alleen spelavonden met een toekomstige datum terug.</summary>
+    // Geeft alleen spelavonden met een toekomstige datum terug.
     public async Task<ActionResult<IEnumerable<GameNight>>> GetUpcoming()
     {
         var gameNights = await _gameNightRepository.GetUpcomingGameNightsAsync();
@@ -90,7 +90,7 @@ public class GameNightsController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    /// <summary>Maakt een spelavond aan voor de ingelogde volwassen organisator.</summary>
+    // Maakt een spelavond aan voor de ingelogde volwassen organisator.
     public async Task<ActionResult<GameNight>> Create(CreateGameNightRequest request)
     {
         var personId = await _currentUser.GetPersonIdAsync(User);
@@ -135,7 +135,7 @@ public class GameNightsController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    /// <summary>Wijzigt een eigen spelavond als er nog geen deelnemers zijn.</summary>
+    // Wijzigt een eigen spelavond als er nog geen deelnemers zijn.
     public async Task<IActionResult> Update(int id, UpdateGameNightRequest request)
     {
         var gameNight = await _gameNightRepository.GetByIdWithDetailsAsync(id);
@@ -165,7 +165,7 @@ public class GameNightsController : ControllerBase
 
     [Authorize]
     [HttpDelete("{id}")]
-    /// <summary>Verwijdert een eigen lege spelavond of een avond van een beheerder.</summary>
+    // Verwijdert een eigen lege spelavond of een avond van een beheerder.
     public async Task<IActionResult> Delete(int id)
     {
         var gameNight = await _gameNightRepository.GetByIdWithDetailsAsync(id);
@@ -179,12 +179,12 @@ public class GameNightsController : ControllerBase
 
     [Authorize]
     [HttpPost("{id}/players")]
-    /// <summary>Schrijft de ingelogde gebruiker in voor de gekozen spelavond.</summary>
+    // Schrijft de ingelogde gebruiker in voor de gekozen spelavond.
     public Task<IActionResult> JoinAsCurrentUser(int id) => JoinGameNight(id, null);
 
     [HttpPost("{id}/join/{personId}")]
     [Authorize]
-    /// <summary>Controleert leeftijd, capaciteit, eigenaarschap en de dagregel bij inschrijving.</summary>
+    // Controleert leeftijd, capaciteit, eigenaarschap en de dagregel bij inschrijving.
     public async Task<IActionResult> JoinGameNight(int id, int? personId)
     {
         var currentPersonId = await _currentUser.GetPersonIdAsync(User);

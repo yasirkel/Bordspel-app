@@ -21,7 +21,7 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    /// <summary>Toont het formulier waarmee een ingelogde gebruiker een profiel maakt.</summary>
+    // Toont het formulier waarmee een ingelogde gebruiker een profiel maakt.
     public async Task<IActionResult> CreateProfile()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -31,7 +31,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Valideert en bewaart het nieuwe profiel van de ingelogde gebruiker.</summary>
+    // Valideert en bewaart het nieuwe profiel van de ingelogde gebruiker.
     public async Task<IActionResult> CreateProfile(CreateProfileViewModel vm)
     {
         if (!ModelState.IsValid) return View(vm);

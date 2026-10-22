@@ -16,7 +16,7 @@ public class BoardGamesController : Controller
     }
 
     // GET: /BoardGames
-    /// <summary>Toont het overzicht van alle beschikbare bordspellen.</summary>
+    // Toont het overzicht van alle beschikbare bordspellen.
     public async Task<IActionResult> Index()
     {
         var boardGames = await _boardGameService.GetAllAsync();
@@ -38,7 +38,7 @@ public class BoardGamesController : Controller
     }
 
     // GET: /BoardGames/Details/5
-    /// <summary>Toont de details en toekomstige spelavonden van één bordspel.</summary>
+    // Toont de details en toekomstige spelavonden van één bordspel.
     public async Task<IActionResult> Details(int id)
     {
         var boardGame = await _boardGameService.GetDetailsAsync(id);

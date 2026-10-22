@@ -46,7 +46,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/All
     [AllowAnonymous]
-    /// <summary>Toont toekomstige spelavonden met zoekfilters en paginering.</summary>
+    // Toont toekomstige spelavonden met zoekfilters en paginering.
     public async Task<IActionResult> All(string? searchCity, string? searchOrganizer, int page = 1)
     {
         const int pageSize = 10;
@@ -81,7 +81,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Mine
     [Authorize]
-    /// <summary>Toont de spelavonden die de huidige gebruiker organiseert.</summary>
+    // Toont de spelavonden die de huidige gebruiker organiseert.
     public async Task<IActionResult> Mine()
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -114,7 +114,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Participating
     [Authorize]
-    /// <summary>Toont de spelavonden waaraan de huidige gebruiker deelneemt.</summary>
+    // Toont de spelavonden waaraan de huidige gebruiker deelneemt.
     public async Task<IActionResult> Participating()
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -147,7 +147,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Details/5
     [AllowAnonymous]
-    /// <summary>Toont details, deelnemers, spellen en potluckgegevens van een avond.</summary>
+    // Toont details, deelnemers, spellen en potluckgegevens van een avond.
     public async Task<IActionResult> Details(int id)
     {
         var gameNight = await _gameNightService.GetDetailsAsync(id);
@@ -217,7 +217,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Create
     [Authorize]
-    /// <summary>Toont het formulier voor een nieuwe spelavond.</summary>
+    // Toont het formulier voor een nieuwe spelavond.
     public async Task<IActionResult> Create()
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -252,7 +252,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Valideert en bewaart een nieuwe spelavond van de organisator.</summary>
+    // Valideert en bewaart een nieuwe spelavond van de organisator.
     public async Task<IActionResult> Create(GameNightCreateViewModel model)
     {
         if (!ModelState.IsValid)
@@ -312,7 +312,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Edit/5
     [Authorize]
-    /// <summary>Toont het wijzigingsformulier voor een nog lege eigen spelavond.</summary>
+    // Toont het wijzigingsformulier voor een nog lege eigen spelavond.
     public async Task<IActionResult> Edit(int id)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -377,7 +377,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Verwerkt wijzigingen zolang niemand voor de avond is ingeschreven.</summary>
+    // Verwerkt wijzigingen zolang niemand voor de avond is ingeschreven.
     public async Task<IActionResult> Edit(int id, GameNightEditViewModel model)
     {
         if (id != model.Id)
@@ -448,7 +448,7 @@ public class GameNightsController : Controller
 
     // GET: /GameNights/Delete/5
     [Authorize]
-    /// <summary>Toont de bevestiging voor het verwijderen van een lege eigen avond.</summary>
+    // Toont de bevestiging voor het verwijderen van een lege eigen avond.
     public async Task<IActionResult> Delete(int id)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -494,7 +494,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    /// <summary>Verwijdert de spelavond na bevestiging en domeincontrole.</summary>
+    // Verwijdert de spelavond na bevestiging en domeincontrole.
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -531,7 +531,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Start de inschrijving en toont eerst eventuele dieetwaarschuwingen.</summary>
+    // Start de inschrijving en toont eerst eventuele dieetwaarschuwingen.
     public async Task<IActionResult> Register(int id)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -571,7 +571,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Bevestigt een inschrijving ondanks eerder getoonde dieetwaarschuwingen.</summary>
+    // Bevestigt een inschrijving ondanks eerder getoonde dieetwaarschuwingen.
     public async Task<IActionResult> ConfirmRegister(int gameNightId)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -599,7 +599,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Verwijdert de deelname van de huidige gebruiker.</summary>
+    // Verwijdert de deelname van de huidige gebruiker.
     public async Task<IActionResult> Unregister(int id)
     {
         var personId = await GetCurrentPersonIdAsync();
@@ -626,7 +626,7 @@ public class GameNightsController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    /// <summary>Voegt voor de huidige deelnemer een potluckitem met dieetkenmerken toe.</summary>
+    // Voegt voor de huidige deelnemer een potluckitem met dieetkenmerken toe.
     public async Task<IActionResult> AddPotluckItem(int id, PotluckItemInputModel model)
     {
         if (!ModelState.IsValid)

@@ -20,7 +20,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpGet]
-    /// <summary>Geeft alle domeinprofielen terug.</summary>
+    // Geeft alle domeinprofielen terug.
     public async Task<ActionResult<IEnumerable<Person>>> GetAll()
     {
         var persons = await _personRepository.GetAllAsync();
@@ -28,7 +28,7 @@ public class PersonsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    /// <summary>Geeft één profiel terug op basis van het Person-ID.</summary>
+    // Geeft één profiel terug op basis van het Person-ID.
     public async Task<ActionResult<Person>> GetById(int id)
     {
         var person = await _personRepository.GetByIdAsync(id);
@@ -41,7 +41,7 @@ public class PersonsController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    /// <summary>Maakt een profiel aan na controle van de minimale leeftijd.</summary>
+    // Maakt een profiel aan na controle van de minimale leeftijd.
     public async Task<ActionResult<Person>> Create(Person person)
     {
         if (!person.IsValidDateOfBirth())
@@ -60,7 +60,7 @@ public class PersonsController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    /// <summary>Wijzigt het eigen profiel of een profiel als beheerder.</summary>
+    // Wijzigt het eigen profiel of een profiel als beheerder.
     public async Task<IActionResult> Update(int id, Person person)
     {
         if (id != person.Id)
@@ -78,7 +78,7 @@ public class PersonsController : ControllerBase
 
     [Authorize]
     [HttpDelete("{id}")]
-    /// <summary>Verwijdert het eigen profiel of een profiel als beheerder.</summary>
+    // Verwijdert het eigen profiel of een profiel als beheerder.
     public async Task<IActionResult> Delete(int id)
     {
         var currentPersonId = await _currentUser.GetPersonIdAsync(User);

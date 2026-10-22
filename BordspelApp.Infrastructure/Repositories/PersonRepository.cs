@@ -14,31 +14,31 @@ public class PersonRepository : IPersonRepository
         _context = context;
     }
 
-    /// <summary>Haalt een domeinpersoon op via het ID.</summary>
+    // Haalt een domeinpersoon op via het ID.
     public async Task<Person?> GetByIdAsync(int id)
     {
         return await _context.Persons.FindAsync(id);
     }
 
-    /// <summary>Haalt alle domeinpersonen op.</summary>
+    // Haalt alle domeinpersonen op.
     public async Task<IEnumerable<Person>> GetAllAsync()
     {
         return await _context.Persons.ToListAsync();
     }
 
-    /// <summary>Geeft een queryable terug voor profielqueries.</summary>
+    // Geeft een queryable terug voor profielqueries.
     public IQueryable<Person> GetAllQueryable()
     {
         return _context.Persons;
     }
 
-    /// <summary>Zoekt een domeinpersoon op e-mailadres.</summary>
+    // Zoekt een domeinpersoon op e-mailadres.
     public async Task<Person?> GetByEmailAsync(string email)
     {
         return await _context.Persons.FirstOrDefaultAsync(p => p.Email == email);
     }
 
-    /// <summary>Slaat een nieuw domeinprofiel op.</summary>
+    // Slaat een nieuw domeinprofiel op.
     public async Task<Person> AddAsync(Person person)
     {
         _context.Persons.Add(person);
@@ -46,14 +46,14 @@ public class PersonRepository : IPersonRepository
         return person;
     }
 
-    /// <summary>Slaat wijzigingen aan een domeinprofiel op.</summary>
+    // Slaat wijzigingen aan een domeinprofiel op.
     public async Task UpdateAsync(Person person)
     {
         _context.Persons.Update(person);
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Verwijdert een profiel wanneer het ID bestaat.</summary>
+    // Verwijdert een profiel wanneer het ID bestaat.
     public async Task DeleteAsync(int id)
     {
         var person = await GetByIdAsync(id);
@@ -64,7 +64,7 @@ public class PersonRepository : IPersonRepository
         }
     }
 
-    /// <summary>Haalt alle personen op die volgens hun geboortedatum volwassen zijn.</summary>
+    // Haalt alle personen op die volgens hun geboortedatum volwassen zijn.
     public async Task<IEnumerable<Person>> GetPersonsAtLeast18YearsOldAsync()
     {
         var cutoffDate = DateTime.Today.AddYears(-18);

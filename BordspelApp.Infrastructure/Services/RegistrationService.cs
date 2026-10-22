@@ -16,7 +16,7 @@ public class RegistrationService : IRegistrationService
         _personRepository = personRepository;
     }
 
-    /// <summary>Controleert de inschrijfregels en registreert de persoon als dat is toegestaan.</summary>
+    // Controleert de inschrijfregels en registreert de persoon als dat is toegestaan.
     public async Task<RegistrationResponse> RegisterAsync(int personId, int gameNightId, bool forceRegister = false)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -143,7 +143,7 @@ public class RegistrationService : IRegistrationService
         };
     }
 
-    /// <summary>Verwijdert de eigen deelname aan een spelavond.</summary>
+    // Verwijdert de eigen deelname aan een spelavond.
     public async Task<bool> UnregisterAsync(int personId, int gameNightId)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -161,7 +161,7 @@ public class RegistrationService : IRegistrationService
         return true;
     }
 
-    /// <summary>Controleert of een persoon bij een spelavond staat ingeschreven.</summary>
+    // Controleert of een persoon bij een spelavond staat ingeschreven.
     public async Task<bool> IsRegisteredAsync(int personId, int gameNightId)
     {
         return await _gameNightRepository.GetAllQueryable()

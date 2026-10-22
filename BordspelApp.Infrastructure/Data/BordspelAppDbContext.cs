@@ -18,7 +18,7 @@ public class BordspelAppDbContext : DbContext
     public DbSet<GameNightBoardGame> GameNightBoardGames { get; set; }
     public DbSet<PotluckItem> PotluckItems { get; set; }
 
-    /// <summary>Configureert entiteiten, value objects en relaties in de domeindatabase.</summary>
+    // Configureert entiteiten, value objects en relaties in de domeindatabase.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Configureer profielvelden, value objects en de organisatorrelatie.

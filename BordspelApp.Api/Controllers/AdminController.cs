@@ -27,7 +27,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("link-user-person")]
-    /// <summary>Koppelt een Identity-gebruiker aan een domeinpersoon voor beheerders.</summary>
+    // Koppelt een Identity-gebruiker aan een domeinpersoon voor beheerders.
     public async Task<IActionResult> LinkUserPerson([FromBody] LinkUserPersonRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Email)) return BadRequest("Email is required");

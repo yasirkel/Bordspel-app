@@ -14,13 +14,13 @@ public class GameNightRepository : IGameNightRepository
         _context = context;
     }
 
-    /// <summary>Haalt een spelavond zonder navigatiegegevens op.</summary>
+    // Haalt een spelavond zonder navigatiegegevens op.
     public async Task<GameNight?> GetByIdAsync(int id)
     {
         return await _context.GameNights.FindAsync(id);
     }
 
-    /// <summary>Haalt een spelavond met organisator, deelnemers en spellen op.</summary>
+    // Haalt een spelavond met organisator, deelnemers en spellen op.
     public async Task<GameNight?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.GameNights
@@ -32,19 +32,19 @@ public class GameNightRepository : IGameNightRepository
             .FirstOrDefaultAsync(gn => gn.Id == id);
     }
 
-    /// <summary>Haalt alle spelavonden op zonder aanvullende relaties.</summary>
+    // Haalt alle spelavonden op zonder aanvullende relaties.
     public async Task<IEnumerable<GameNight>> GetAllAsync()
     {
         return await _context.GameNights.ToListAsync();
     }
 
-    /// <summary>Geeft een queryable terug voor samengestelde spelavondqueries.</summary>
+    // Geeft een queryable terug voor samengestelde spelavondqueries.
     public IQueryable<GameNight> GetAllQueryable()
     {
         return _context.GameNights;
     }
 
-    /// <summary>Haalt alle spelavonden met de belangrijkste relaties op.</summary>
+    // Haalt alle spelavonden met de belangrijkste relaties op.
     public async Task<IEnumerable<GameNight>> GetAllWithDetailsAsync()
     {
         return await _context.GameNights
@@ -56,7 +56,7 @@ public class GameNightRepository : IGameNightRepository
             .ToListAsync();
     }
 
-    /// <summary>Slaat een nieuwe spelavond op.</summary>
+    // Slaat een nieuwe spelavond op.
     public async Task<GameNight> AddAsync(GameNight gameNight)
     {
         _context.GameNights.Add(gameNight);
@@ -64,14 +64,14 @@ public class GameNightRepository : IGameNightRepository
         return gameNight;
     }
 
-    /// <summary>Slaat wijzigingen aan een spelavond op.</summary>
+    // Slaat wijzigingen aan een spelavond op.
     public async Task UpdateAsync(GameNight gameNight)
     {
         _context.GameNights.Update(gameNight);
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Verwijdert een spelavond op basis van het ID.</summary>
+    // Verwijdert een spelavond op basis van het ID.
     public async Task DeleteAsync(int id)
     {
         var gameNight = await GetByIdAsync(id);
@@ -82,14 +82,14 @@ public class GameNightRepository : IGameNightRepository
         }
     }
 
-    /// <summary>Verwijdert de meegegeven spelavond.</summary>
+    // Verwijdert de meegegeven spelavond.
     public async Task DeleteAsync(GameNight gameNight)
     {
         _context.GameNights.Remove(gameNight);
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>Haalt toekomstige avonden op in oplopende datumvolgorde.</summary>
+    // Haalt toekomstige avonden op in oplopende datumvolgorde.
     public async Task<IEnumerable<GameNight>> GetUpcomingGameNightsAsync()
     {
         return await _context.GameNights
@@ -101,7 +101,7 @@ public class GameNightRepository : IGameNightRepository
             .ToListAsync();
     }
 
-    /// <summary>Haalt de avonden van één organisator op.</summary>
+    // Haalt de avonden van één organisator op.
     public async Task<IEnumerable<GameNight>> GetGameNightsByOrganizerAsync(int organizerId)
     {
         return await _context.GameNights
@@ -111,7 +111,7 @@ public class GameNightRepository : IGameNightRepository
             .ToListAsync();
     }
 
-    /// <summary>Haalt alle avonden op die op een specifieke kalenderdag vallen.</summary>
+    // Haalt alle avonden op die op een specifieke kalenderdag vallen.
     public async Task<IEnumerable<GameNight>> GetGameNightsByDateAsync(DateTime date)
     {
         var startOfDay = date.Date;
@@ -123,7 +123,7 @@ public class GameNightRepository : IGameNightRepository
             .ToListAsync();
     }
 
-    /// <summary>Controleert of een persoon die dag al een deelname heeft.</summary>
+    // Controleert of een persoon die dag al een deelname heeft.
     public async Task<bool> PersonHasGameNightOnDateAsync(int personId, DateTime date)
     {
         var startOfDay = date.Date;
@@ -135,7 +135,7 @@ public class GameNightRepository : IGameNightRepository
                            gnp.GameNight.DateTime < endOfDay);
     }
 
-    /// <summary>Haalt alle spelavonden op waaraan een persoon deelneemt.</summary>
+    // Haalt alle spelavonden op waaraan een persoon deelneemt.
     public async Task<IEnumerable<GameNight>> GetGameNightsByParticipantAsync(int personId)
     {
         // Verzamel eerst de IDs en laad daarna de volledige entiteiten met hun relaties.

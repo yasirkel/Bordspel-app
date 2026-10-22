@@ -11,7 +11,7 @@ public class BordspelAppIdentityDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
-    /// <summary>Configureert Identity-tabellen zonder een cross-database foreign key naar Person.</summary>
+    // Configureert Identity-tabellen zonder een cross-database foreign key naar Person.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

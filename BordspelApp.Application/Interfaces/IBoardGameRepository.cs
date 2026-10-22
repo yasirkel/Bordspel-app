@@ -4,17 +4,17 @@ namespace BordspelApp.Application.Interfaces;
 
 public interface IBoardGameRepository
 {
-    /// <summary>Haalt een bordspel op via het ID.</summary>
+    // Haalt een bordspel op via het ID.
     Task<BoardGame?> GetByIdAsync(int id);
-    /// <summary>Haalt alle bordspellen op.</summary>
+    // Haalt alle bordspellen op.
     Task<IEnumerable<BoardGame>> GetAllAsync();
-    /// <summary>Geeft een uitbreidbare query voor bordspellen terug.</summary>
+    // Geeft een uitbreidbare query voor bordspellen terug.
     IQueryable<BoardGame> GetAllQueryable();
-    /// <summary>Slaat een nieuw bordspel op.</summary>
+    // Slaat een nieuw bordspel op.
     Task<BoardGame> AddAsync(BoardGame boardGame);
-    /// <summary>Slaat wijzigingen aan een bordspel op.</summary>
+    // Slaat wijzigingen aan een bordspel op.
     Task UpdateAsync(BoardGame boardGame);
     Task DeleteAsync(int id);
-    /// <summary>Haalt alleen 18+-bordspellen op.</summary>
+    // Haalt alleen 18+-bordspellen op.
     Task<IEnumerable<BoardGame>> GetAdultGamesAsync();
 }

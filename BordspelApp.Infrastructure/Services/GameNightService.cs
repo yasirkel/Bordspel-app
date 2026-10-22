@@ -17,7 +17,7 @@ public class GameNightService : IGameNightService
         _boardGameRepository = boardGameRepository;
     }
 
-    /// <summary>Haalt toekomstige spelavonden op met optionele filters en paginering.</summary>
+    // Haalt toekomstige spelavonden op met optionele filters en paginering.
     public async Task<IEnumerable<GameNightListItemDto>> GetAllUpcomingAsync(string? searchCity = null, string? searchOrganizer = null, int page = 1, int pageSize = 10)
     {
         var query = _gameNightRepository.GetAllQueryable()
@@ -57,7 +57,7 @@ public class GameNightService : IGameNightService
         });
     }
 
-    /// <summary>Geeft het aantal toekomstige avonden terug dat bij de filters past.</summary>
+    // Geeft het aantal toekomstige avonden terug dat bij de filters past.
     public async Task<int> GetTotalUpcomingCountAsync(string? searchCity = null, string? searchOrganizer = null)
     {
         var query = _gameNightRepository.GetAllQueryable()
@@ -80,7 +80,7 @@ public class GameNightService : IGameNightService
         return await query.CountAsync();
     }
 
-    /// <summary>Haalt de avonden op die door een organisator zijn aangemaakt.</summary>
+    // Haalt de avonden op die door een organisator zijn aangemaakt.
     public async Task<IEnumerable<GameNightListItemDto>> GetMyGameNightsAsync(int organizerId)
     {
         var gameNights = await _gameNightRepository.GetAllQueryable()
@@ -105,7 +105,7 @@ public class GameNightService : IGameNightService
         });
     }
 
-    /// <summary>Haalt de avonden op waaraan een persoon deelneemt.</summary>
+    // Haalt de avonden op waaraan een persoon deelneemt.
     public async Task<IEnumerable<GameNightListItemDto>> GetParticipatingGameNightsAsync(int personId)
     {
         var gameNights = await _gameNightRepository.GetAllQueryable()
@@ -130,7 +130,7 @@ public class GameNightService : IGameNightService
         });
     }
 
-    /// <summary>Laadt een spelavond met organisator, deelnemers, spellen en potluckitems.</summary>
+    // Laadt een spelavond met organisator, deelnemers, spellen en potluckitems.
     public async Task<GameNightDetailsDto?> GetDetailsAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -191,7 +191,7 @@ public class GameNightService : IGameNightService
         };
     }
 
-    /// <summary>Maakt een nieuwe spelavond en koppelt de gekozen bordspellen.</summary>
+    // Maakt een nieuwe spelavond en koppelt de gekozen bordspellen.
     public async Task<bool> CreateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
     {
         var address = new Address(dto.Street, dto.HouseNumber, dto.City, dto.PostalCode);
@@ -227,7 +227,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
-    /// <summary>Wijzigt een spelavond zolang nog niemand is ingeschreven.</summary>
+    // Wijzigt een spelavond zolang nog niemand is ingeschreven.
     public async Task<bool> UpdateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -278,7 +278,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
-    /// <summary>Verwijdert een spelavond wanneer deze nog geen deelnemers heeft.</summary>
+    // Verwijdert een spelavond wanneer deze nog geen deelnemers heeft.
     public async Task<bool> DeleteAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -297,7 +297,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
-    /// <summary>Controleert of een spelavond nog gewijzigd of verwijderd mag worden.</summary>
+    // Controleert of een spelavond nog gewijzigd of verwijderd mag worden.
     public async Task<bool> CanEditOrDeleteAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()

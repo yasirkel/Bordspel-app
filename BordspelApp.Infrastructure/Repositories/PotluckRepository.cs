@@ -14,20 +14,20 @@ public class PotluckRepository : IPotluckRepository
         _context = context;
     }
 
-    /// <summary>Controleert of de doelspelavond bestaat.</summary>
+    // Controleert of de doelspelavond bestaat.
     public Task<bool> GameNightExistsAsync(int gameNightId)
     {
         return _context.GameNights.AnyAsync(gameNight => gameNight.Id == gameNightId);
     }
 
-    /// <summary>Controleert of een persoon deelnemer is van de spelavond.</summary>
+    // Controleert of een persoon deelnemer is van de spelavond.
     public Task<bool> IsParticipantAsync(int gameNightId, int personId)
     {
         return _context.GameNightPlayers.AnyAsync(player =>
             player.GameNightId == gameNightId && player.PersonId == personId);
     }
 
-    /// <summary>Slaat een nieuw potluckitem op in de domeindatabase.</summary>
+    // Slaat een nieuw potluckitem op in de domeindatabase.
     public async Task<PotluckItem> AddAsync(PotluckItem item)
     {
         _context.PotluckItems.Add(item);
@@ -35,7 +35,7 @@ public class PotluckRepository : IPotluckRepository
         return item;
     }
 
-    /// <summary>Haalt de potluckitems van een spelavond gesorteerd op.</summary>
+    // Haalt de potluckitems van een spelavond gesorteerd op.
     public async Task<IReadOnlyList<PotluckItem>> GetByGameNightAsync(int gameNightId)
     {
         return await _context.PotluckItems

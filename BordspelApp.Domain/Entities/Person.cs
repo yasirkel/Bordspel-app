@@ -37,28 +37,28 @@ public class Person
         }
     }
 
-    /// <summary>Geeft de volledige naam voor weergave in de applicatie.</summary>
+    // Geeft de volledige naam voor weergave in de applicatie.
     public string FullName => $"{FirstName} {LastName}";
 
-    /// <summary>Controleert of de geboortedatum niet in de toekomst ligt.</summary>
+    // Controleert of de geboortedatum niet in de toekomst ligt.
     public bool IsValidDateOfBirth()
     {
         return DateOfBirth <= DateTime.Today;
     }
 
-    /// <summary>Controleert of de persoon minimaal zestien jaar oud is.</summary>
+    // Controleert of de persoon minimaal zestien jaar oud is.
     public bool IsAtLeast16YearsOld()
     {
         return Age >= 16;
     }
 
-    /// <summary>Controleert of de persoon minimaal achttien jaar oud is.</summary>
+    // Controleert of de persoon minimaal achttien jaar oud is.
     public bool IsAtLeast18YearsOld()
     {
         return Age >= 18;
     }
 
-    /// <summary>Controleert of de persoon als organisator mag optreden.</summary>
+    // Controleert of de persoon als organisator mag optreden.
     public bool CanOrganizeGameNight()
     {
         return IsAtLeast18YearsOld();

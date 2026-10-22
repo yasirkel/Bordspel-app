@@ -4,28 +4,28 @@ namespace BordspelApp.Application.Interfaces;
 
 public interface IGameNightRepository
 {
-    /// <summary>Haalt een spelavond op via het ID.</summary>
+    // Haalt een spelavond op via het ID.
     Task<GameNight?> GetByIdAsync(int id);
-    /// <summary>Haalt een spelavond met alle benodigde details op.</summary>
+    // Haalt een spelavond met alle benodigde details op.
     Task<GameNight?> GetByIdWithDetailsAsync(int id);
-    /// <summary>Haalt alle spelavonden op.</summary>
+    // Haalt alle spelavonden op.
     Task<IEnumerable<GameNight>> GetAllAsync();
     Task<IEnumerable<GameNight>> GetAllWithDetailsAsync();
-    /// <summary>Geeft een uitbreidbare query voor spelavonden terug.</summary>
+    // Geeft een uitbreidbare query voor spelavonden terug.
     IQueryable<GameNight> GetAllQueryable();
-    /// <summary>Slaat een nieuwe spelavond op.</summary>
+    // Slaat een nieuwe spelavond op.
     Task<GameNight> AddAsync(GameNight gameNight);
-    /// <summary>Slaat wijzigingen aan een spelavond op.</summary>
+    // Slaat wijzigingen aan een spelavond op.
     Task UpdateAsync(GameNight gameNight);
-    /// <summary>Verwijdert een spelavond via het ID.</summary>
+    // Verwijdert een spelavond via het ID.
     Task DeleteAsync(int id);
-    /// <summary>Verwijdert een bestaande spelavond.</summary>
+    // Verwijdert een bestaande spelavond.
     Task DeleteAsync(GameNight gameNight);
     Task<IEnumerable<GameNight>> GetUpcomingGameNightsAsync();
     Task<IEnumerable<GameNight>> GetGameNightsByOrganizerAsync(int organizerId);
     Task<IEnumerable<GameNight>> GetGameNightsByDateAsync(DateTime date);
-    /// <summary>Controleert de regel van maximaal één deelname per dag.</summary>
+    // Controleert de regel van maximaal één deelname per dag.
     Task<bool> PersonHasGameNightOnDateAsync(int personId, DateTime date);
-    /// <summary>Haalt de deelnames van een persoon op.</summary>
+    // Haalt de deelnames van een persoon op.
     Task<IEnumerable<GameNight>> GetGameNightsByParticipantAsync(int personId);
 }

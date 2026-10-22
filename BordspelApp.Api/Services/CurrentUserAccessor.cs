@@ -13,13 +13,13 @@ public sealed class CurrentUserAccessor
         _userManager = userManager;
     }
 
-    /// <summary>Haalt de Identity-gebruiker op die bij de huidige claims hoort.</summary>
+    // Haalt de Identity-gebruiker op die bij de huidige claims hoort.
     public async Task<ApplicationUser?> GetUserAsync(ClaimsPrincipal principal)
     {
         return await _userManager.GetUserAsync(principal);
     }
 
-    /// <summary>Geeft het gekoppelde Person-ID van de ingelogde gebruiker terug.</summary>
+    // Geeft het gekoppelde Person-ID van de ingelogde gebruiker terug.
     public async Task<int?> GetPersonIdAsync(ClaimsPrincipal principal)
     {
         var user = await GetUserAsync(principal);
