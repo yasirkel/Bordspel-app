@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll verified BordspelApp GHCR builds
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=bordspelapp-ghcr-pull.service
+
+[Install]
+WantedBy=timers.target

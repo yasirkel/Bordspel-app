@@ -62,6 +62,29 @@ De workflow bevat voor deze ene assessment-host de niet-geheime waarden voor de 
 
 Deployment staat voor deze assessment-branch standaard aan zodra de OIDC-role en host zijn voorbereid. Zet repository variable `AWS_DEPLOY_ENABLED` op `false` om deployment tijdelijk te pauzeren; CI blijft dan builden en testen.
 
+## GHCR pull-based deployment
+
+Omdat AWS OIDC in dit project door een Organizations SCP wordt geblokkeerd, gebruikt de huidige vervangende straat GitHub Container Registry. `.github/workflows/ghcr-deploy.yml` restaureert, bouwt en test eerst de volledige solution. Alleen daarna worden drie images met de exacte commit-SHA als tag gepubliceerd:
+
+- `ghcr.io/yasirkel/bordspelapp-api:<commit-sha>`
+- `ghcr.io/yasirkel/bordspelapp-webapp:<commit-sha>`
+- `ghcr.io/yasirkel/bordspelapp-migrator:<commit-sha>`
+
+De workflow gebruikt uitsluitend de ingebouwde `GITHUB_TOKEN` met `contents: read` en `packages: write`. De GHCR-packages moeten publiek leesbaar zijn voordat de EC2-host zonder registry-credentials kan pullen; publieke GHCR-containerpackages ondersteunen anonieme pulls.
+
+Op de EC2-host draait `bordspelapp-ghcr-pull.timer` iedere vijf minuten. `deploy/ghcr-pull-deploy.sh`:
+
+1. zoekt uitsluitend naar een succesvolle workflow-run voor `fix/assessment-completion`;
+2. controleert dat alle drie images exact dezelfde commit-SHA en OCI revision-label hebben;
+3. pullt de images en voert de bestaande migrator éénmalig uit;
+4. activeert de nieuwe API en WebApp pas na geslaagde migraties;
+5. voert healthchecks uit en herstelt de vorige imageconfiguratie bij een activatiefout;
+6. slaat een al gedeployde SHA over.
+
+De database wordt niet teruggerold bij een applicatierollback. EF-migraties moeten daarom backward-compatible zijn; er worden geen destructieve resetacties uitgevoerd. Als EC2 gestopt is, draait de timer niet en verandert er niets. Na het starten controleert de timer de nieuwste volledig geslaagde build.
+
+Na bewezen werking wordt de oude OIDC-deployjob uitgeschakeld; de aparte GHCR-workflow is dan de enige automatische deploymentroute.
+
 ## Lokale controle
 
 Kopieer `.env.example` naar `.env`, vervang alle voorbeeldwaarden en voer uit:

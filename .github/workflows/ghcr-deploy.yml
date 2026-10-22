@@ -1,0 +1,99 @@
+name: GHCR CI and pull deployment
+
+on:
+  push:
+    branches: ["fix/assessment-completion"]
+    paths:
+      - "BordspelApp.sln"
+      - "BordspelApp.Domain/**"
+      - "BordspelApp.Application/**"
+      - "BordspelApp.Infrastructure/**"
+      - "BordspelApp.Api/**"
+      - "BordspelApp.WebApp/**"
+      - "BordspelApp.Migrator/**"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - "**/Dockerfile"
+      - ".github/workflows/ghcr-deploy.yml"
+      - "deploy/**"
+      - "docs/AWS-Deployment.md"
+      - ".env.example"
+  workflow_dispatch:
+
+concurrency:
+  group: bordspelapp-ghcr-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: yasirkel
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore BordspelApp.sln
+
+      - name: Build with warnings as errors
+        run: dotnet build BordspelApp.sln --configuration Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test BordspelApp.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=ghcr-tests.trx"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: BordspelApp.Api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/bordspelapp-api:${{ env.IMAGE_TAG }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          provenance: false
+
+      - name: Publish WebApp image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: BordspelApp.WebApp/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/bordspelapp-webapp:${{ env.IMAGE_TAG }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          provenance: false
+
+      - name: Publish Migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: BordspelApp.Migrator/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/bordspelapp-migrator:${{ env.IMAGE_TAG }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          provenance: false
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghcr-test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore

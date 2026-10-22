@@ -1,0 +1,10 @@
+[Unit]
+Description=BordspelApp verified GHCR pull deployment
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/bordspel-app
+ExecStart=/opt/bordspel-app/deploy/ghcr-pull-deploy.sh
