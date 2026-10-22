@@ -30,6 +30,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<ApplicationUser> _userStore;
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
@@ -39,6 +40,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
@@ -46,6 +48,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
             IPersonRepository personRepository)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
@@ -207,6 +210,15 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
                     {
                         try
                         {
+                            if (!await _roleManager.RoleExistsAsync("client"))
+                            {
+                                var roleResult = await _roleManager.CreateAsync(new IdentityRole("client"));
+                                if (!roleResult.Succeeded)
+                                {
+                                    _logger.LogWarning("Failed to create default client role: {Errors}", string.Join(';', roleResult.Errors.Select(e => e.Description)));
+                                }
+                            }
+
                             await _userManager.AddToRoleAsync(user, "client");
                         }
                         catch (NotSupportedException ex)
