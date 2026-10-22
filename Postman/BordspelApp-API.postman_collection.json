@@ -60,6 +60,16 @@
       "name": "Authenticated actions",
       "item": [
         {
+          "name": "Login for authenticated actions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login for authenticated actions succeeds', function () { pm.response.to.have.status(200); });"] } }]
+        },
+        {
           "name": "Join current user",
           "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}", "players"] } },
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('Join returns an expected business response', function () { pm.expect([200, 400, 404]).to.include(pm.response.code); });"] } }]
@@ -78,6 +88,11 @@
           "name": "List game nights and board games",
           "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ gameNights { id title dateTime organizerName boardGames { id name genre } } boardGames { id name genre } }\"\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('GraphQL succeeds', function () { pm.response.to.have.status(200); });", "pm.test('GraphQL has no errors', function () { pm.expect(pm.response.json().errors).to.be.undefined; });"] } }]
+        },
+        {
+          "name": "Logout before expected failures",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] } },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Logout before negative tests succeeds', function () { pm.response.to.have.status(204); });"] } }]
         }
       ]
     },
