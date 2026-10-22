@@ -1,0 +1,135 @@
+name: AWS CI and deployment
+
+on:
+  push:
+    branches: ["fix/assessment-completion"]
+    paths:
+      - "BordspelApp.sln"
+      - "BordspelApp.Domain/**"
+      - "BordspelApp.Application/**"
+      - "BordspelApp.Infrastructure/**"
+      - "BordspelApp.Api/**"
+      - "BordspelApp.WebApp/**"
+      - "BordspelApp.Migrator/**"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - "**/Dockerfile"
+      - ".github/workflows/aws-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: bordspelapp-aws-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-north-1
+  ECR_API_REPOSITORY: bordspelapp-api
+  ECR_WEBAPP_REPOSITORY: bordspelapp-webapp
+  ECR_MIGRATOR_REPOSITORY: bordspelapp-migrator
+
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore BordspelApp.sln
+
+      - name: Build with warnings as errors
+        run: dotnet build BordspelApp.sln --configuration Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test BordspelApp.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=aws-tests.trx"
+
+      - name: Build Docker images
+        run: |
+          docker build --file BordspelApp.Api/Dockerfile --tag bordspelapp-api:${GITHUB_SHA} .
+          docker build --file BordspelApp.WebApp/Dockerfile --tag bordspelapp-webapp:${GITHUB_SHA} .
+          docker build --file BordspelApp.Migrator/Dockerfile --tag bordspelapp-migrator:${GITHUB_SHA} .
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+
+  deploy:
+    needs: verify-and-build
+    # Enable only after EC2, OIDC, ECR and the host .env have been prepared.
+    if: ${{ vars.AWS_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: github-actions-bordspelapp
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure deployment repositories exist
+        run: |
+          for repository in "$ECR_API_REPOSITORY" "$ECR_WEBAPP_REPOSITORY" "$ECR_MIGRATOR_REPOSITORY"; do
+            if ! aws ecr describe-repositories --repository-names "$repository" >/dev/null 2>&1; then
+              aws ecr create-repository --repository-name "$repository" >/dev/null
+            fi
+          done
+
+      - name: Build and push deployment images
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          docker build --file BordspelApp.Api/Dockerfile --tag "$REGISTRY/$ECR_API_REPOSITORY:${GITHUB_SHA}" .
+          docker build --file BordspelApp.WebApp/Dockerfile --tag "$REGISTRY/$ECR_WEBAPP_REPOSITORY:${GITHUB_SHA}" .
+          docker build --file BordspelApp.Migrator/Dockerfile --tag "$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA}" .
+          docker push "$REGISTRY/$ECR_API_REPOSITORY:${GITHUB_SHA}"
+          docker push "$REGISTRY/$ECR_WEBAPP_REPOSITORY:${GITHUB_SHA}"
+          docker push "$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA}"
+
+      - name: Deploy through Systems Manager
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+        run: |
+          test -n "$EC2_INSTANCE_ID"
+          jq -n \
+            --arg compose "cd /opt/bordspel-app && export API_IMAGE=$REGISTRY/$ECR_API_REPOSITORY:${GITHUB_SHA} WEBAPP_IMAGE=$REGISTRY/$ECR_WEBAPP_REPOSITORY:${GITHUB_SHA} MIGRATOR_IMAGE=$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA} && aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml pull api webapp migrator && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml run --rm migrator && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml up -d --remove-orphans" \
+            '{"commands":["set -eu", $compose]}' > ssm-commands.json
+          command_id=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "BordspelApp deployment ${GITHUB_SHA}" \
+            --parameters file://ssm-commands.json \
+            --query Command.CommandId --output text)
+          aws ssm wait command-executed --command-id "$command_id" --instance-id "$EC2_INSTANCE_ID"
+          aws ssm get-command-invocation --command-id "$command_id" --instance-id "$EC2_INSTANCE_ID" --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+
+      - name: Verify public health endpoints
+        env:
+          WEBAPP_URL: ${{ secrets.PUBLIC_WEBAPP_URL }}
+          API_URL: ${{ secrets.PUBLIC_API_URL }}
+        run: |
+          test -n "$WEBAPP_URL" && test -n "$API_URL"
+          curl --fail --show-error --silent --retry 10 --retry-delay 5 "$WEBAPP_URL/health"
+          curl --fail --show-error --silent --retry 10 --retry-delay 5 "$API_URL/health"

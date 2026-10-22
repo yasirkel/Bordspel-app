@@ -9,6 +9,7 @@ using BordspelApp.Api.GraphQL;
 using HotChocolate;
 using Microsoft.OpenApi.Models;
 using BordspelApp.Api.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,12 @@ if (builder.Environment.IsProduction() && containsLocalDb)
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -106,6 +113,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 
 // Enable authentication so Identity services are active during requests/startup
@@ -113,6 +121,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // Map GraphQL endpoint for Banana Cake Pop and GraphiQL
 app.MapGraphQL("/graphql");

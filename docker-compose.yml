@@ -1,0 +1,88 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD is required}
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  migrator:
+    image: ${MIGRATOR_IMAGE:-bordspelapp-migrator:local}
+    build:
+      context: .
+      dockerfile: BordspelApp.Migrator/Dockerfile
+    environment:
+      DomainConnection: ${DomainConnection:?DomainConnection is required}
+      IdentityConnection: ${IdentityConnection:?IdentityConnection is required}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: ${API_IMAGE:-bordspelapp-api:local}
+    build:
+      context: .
+      dockerfile: BordspelApp.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DomainConnection: ${DomainConnection:?DomainConnection is required}
+      ConnectionStrings__IdentityConnection: ${IdentityConnection:?IdentityConnection is required}
+      SeedDatabase: "false"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    expose:
+      - "8080"
+
+  webapp:
+    image: ${WEBAPP_IMAGE:-bordspelapp-webapp:local}
+    build:
+      context: .
+      dockerfile: BordspelApp.WebApp/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DomainConnection: ${DomainConnection:?DomainConnection is required}
+      ConnectionStrings__IdentityConnection: ${IdentityConnection:?IdentityConnection is required}
+      Api__BaseUrl: http://api:8080/
+      SeedDatabase: "false"
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      WEB_HOSTNAME: ${WEB_HOSTNAME:?WEB_HOSTNAME is required}
+      API_HOSTNAME: ${API_HOSTNAME:?API_HOSTNAME is required}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      webapp:
+        condition: service_started
+      api:
+        condition: service_started
+
+volumes:
+  sqlserver-data:
+  caddy-data:
+  caddy-config:

@@ -4,6 +4,7 @@ using BordspelApp.Infrastructure.Identity;
 using BordspelApp.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,12 @@ if (builder.Environment.IsProduction() && containsLocalDb)
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Bind Api options from configuration (appsettings / env vars)
 builder.Services.Configure<BordspelApp.WebApp.Configuration.ApiOptions>(builder.Configuration.GetSection("Api"));
@@ -67,20 +74,19 @@ builder.Services.AddHttpClient("api").ConfigureHttpClient((sp, client) =>
 
 var app = builder.Build();
 
-// Seed database
+// Seed database only in Development or when explicitly enabled.
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
-    DbSeeder.Seed(context);
-
     var env = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
     var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Startup");
 
     // Optionally run the async DatabaseSeeder (creates Identity users and roles) when requested.
     var config = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
-    var runAsyncSeeder = env.IsDevelopment() || config.GetValue<bool>("SeedDatabase");
-    if (runAsyncSeeder)
+    var seedEnabled = env.IsDevelopment() || config.GetValue<bool>("SeedDatabase");
+    if (seedEnabled)
     {
+        var context = scope.ServiceProvider.GetRequiredService<BordspelAppDbContext>();
+        DbSeeder.Seed(context);
         logger.LogInformation("Running async DatabaseSeeder.SeedAsync (Development or SeedDatabase=true).");
         try
         {
@@ -104,6 +110,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -121,5 +128,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();

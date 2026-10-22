@@ -12,7 +12,13 @@ on:
       - '**/*.csproj'
       - '**/*.sln'
       - '**/*.json'
+      - '**/Dockerfile'
+      - 'docker-compose.yml'
+      - 'Caddyfile'
       - '.github/workflows/**'
+      - '**/Dockerfile'
+      - 'docker-compose.yml'
+      - 'Caddyfile'
   pull_request:
     branches:
       - master
@@ -58,3 +64,9 @@ jobs:
           name: test-results
           path: '**/TestResults/*.trx'
           if-no-files-found: ignore
+
+      - name: Build deployment images
+        run: |
+          docker build --file BordspelApp.WebApp/Dockerfile --tag bordspelapp-webapp:ci .
+          docker build --file BordspelApp.Api/Dockerfile --tag bordspelapp-api:ci .
+          docker build --file BordspelApp.Migrator/Dockerfile --tag bordspelapp-migrator:ci .

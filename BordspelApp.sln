@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.Api", "Bordspel
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.Tests", "BordspelApp.Tests\BordspelApp.Tests.csproj", "{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BordspelApp.Migrator", "BordspelApp.Migrator\BordspelApp.Migrator.csproj", "{518A8B62-6358-4EFB-8169-9A6344918810}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D8E8D7B-7C5A-4F12-9B89-5C6D8E4A2F01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{518A8B62-6358-4EFB-8169-9A6344918810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{518A8B62-6358-4EFB-8169-9A6344918810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{518A8B62-6358-4EFB-8169-9A6344918810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{518A8B62-6358-4EFB-8169-9A6344918810}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
