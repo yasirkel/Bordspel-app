@@ -8,7 +8,7 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/opt/bordspel-app
-ExecStart=/usr/bin/docker compose --env-file /opt/bordspel-app/.env start sqlserver api webapp caddy
+ExecStart=/usr/bin/docker compose --env-file /opt/bordspel-app/.env up -d --no-deps sqlserver api webapp caddy
 ExecStartPost=/bin/bash /opt/bordspel-app/deploy/healthcheck.sh
 ExecStop=/usr/bin/docker compose --env-file /opt/bordspel-app/.env stop sqlserver api webapp caddy
 
