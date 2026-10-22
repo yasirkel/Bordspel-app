@@ -21,7 +21,8 @@ cd "$APP_ROOT"
 
 workflow_json=$(curl --fail --silent --show-error --retry 3 \
   -H 'Accept: application/vnd.github+json' \
-  "https://api.github.com/repos/$REPOSITORY/actions/workflows/$WORKFLOW/runs?branch=$BRANCH&status=success&per_page=20")
+  -H 'Cache-Control: no-cache' \
+  "https://api.github.com/repos/$REPOSITORY/actions/workflows/$WORKFLOW/runs?branch=$BRANCH&status=success&per_page=20&cachebust=$(date +%s)")
 commit_sha=$(jq -r --arg branch "$BRANCH" \
   '[.workflow_runs[] | select(.head_branch == $branch and .conclusion == "success")][0].head_sha // empty' \
   <<<"$workflow_json")
