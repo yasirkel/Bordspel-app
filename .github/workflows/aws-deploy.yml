@@ -15,6 +15,9 @@ on:
       - "Caddyfile"
       - "**/Dockerfile"
       - ".github/workflows/aws-deploy.yml"
+      - "deploy/**"
+      - "docs/AWS-Deployment.md"
+      - ".env.example"
   workflow_dispatch:
 
 concurrency:
@@ -67,7 +70,7 @@ jobs:
   deploy:
     needs: verify-and-build
     # Enable only after EC2, OIDC, ECR and the host .env have been prepared.
-    if: ${{ vars.AWS_DEPLOY_ENABLED == 'true' }}
+    if: ${{ vars.AWS_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/fix/assessment-completion' }}
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -84,11 +87,28 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-session-name: github-actions-bordspelapp
 
+      - name: Check EC2 state
+        id: instance
+        env:
+          EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+        run: |
+          test -n "$EC2_INSTANCE_ID"
+          state=$(aws ec2 describe-instances --instance-ids "$EC2_INSTANCE_ID" --query 'Reservations[0].Instances[0].State.Name' --output text)
+          echo "EC2 state: $state"
+          if [[ "$state" == "running" ]]; then
+            echo "deployable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployable=false" >> "$GITHUB_OUTPUT"
+            echo "EC2 is not running; deployment is intentionally skipped. CI remains successful."
+          fi
+
       - name: Login to ECR
+        if: steps.instance.outputs.deployable == 'true'
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Ensure deployment repositories exist
+        if: steps.instance.outputs.deployable == 'true'
         run: |
           for repository in "$ECR_API_REPOSITORY" "$ECR_WEBAPP_REPOSITORY" "$ECR_MIGRATOR_REPOSITORY"; do
             if ! aws ecr describe-repositories --repository-names "$repository" >/dev/null 2>&1; then
@@ -97,6 +117,7 @@ jobs:
           done
 
       - name: Build and push deployment images
+        if: steps.instance.outputs.deployable == 'true'
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
         run: |
@@ -108,13 +129,14 @@ jobs:
           docker push "$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA}"
 
       - name: Deploy through Systems Manager
+        if: steps.instance.outputs.deployable == 'true'
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
         run: |
           test -n "$EC2_INSTANCE_ID"
           jq -n \
-            --arg compose "cd /opt/bordspel-app && export API_IMAGE=$REGISTRY/$ECR_API_REPOSITORY:${GITHUB_SHA} WEBAPP_IMAGE=$REGISTRY/$ECR_WEBAPP_REPOSITORY:${GITHUB_SHA} MIGRATOR_IMAGE=$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA} && aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml pull api webapp migrator && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml run --rm migrator && docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml up -d --remove-orphans" \
+            --arg compose "set -eu; git -C /opt/bordspel-app fetch origin fix/assessment-completion; git -C /opt/bordspel-app checkout fix/assessment-completion; git -C /opt/bordspel-app reset --hard origin/fix/assessment-completion; cd /opt/bordspel-app; export API_IMAGE=$REGISTRY/$ECR_API_REPOSITORY:${GITHUB_SHA} WEBAPP_IMAGE=$REGISTRY/$ECR_WEBAPP_REPOSITORY:${GITHUB_SHA} MIGRATOR_IMAGE=$REGISTRY/$ECR_MIGRATOR_REPOSITORY:${GITHUB_SHA}; aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY; docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml pull api webapp migrator; docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml run --rm migrator; docker compose --env-file /opt/bordspel-app/.env -f /opt/bordspel-app/docker-compose.yml up -d --remove-orphans" \
             '{"commands":["set -eu", $compose]}' > ssm-commands.json
           command_id=$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
@@ -126,6 +148,7 @@ jobs:
           aws ssm get-command-invocation --command-id "$command_id" --instance-id "$EC2_INSTANCE_ID" --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
 
       - name: Verify public health endpoints
+        if: steps.instance.outputs.deployable == 'true'
         env:
           WEBAPP_URL: ${{ secrets.PUBLIC_WEBAPP_URL }}
           API_URL: ${{ secrets.PUBLIC_API_URL }}

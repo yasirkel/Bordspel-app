@@ -12,9 +12,51 @@ Deze configuratie gebruikt één x86-64 Ubuntu EC2-host in `eu-north-1` met Dock
 
 De eerste database-initialisatie gebeurt uitsluitend door `migrator`. De WebApp en API roepen geen `Migrate` of `MigrateAsync` aan tijdens startup.
 
+## Stoppen en starten
+
+De lokale scripts stoppen of starten alleen de bestaande instance; ze termineren niets:
+
+```powershell
+.\deploy\aws-stop.ps1 -InstanceId i-xxxxxxxxxxxxxxxxx
+.\deploy\aws-start.ps1 -InstanceId i-xxxxxxxxxxxxxxxxx
+```
+
+De SQL-data staat in de named Docker-volume `sqlserver-data`, die op de EBS-schijf van de host staat. Configureer op de host `deploy/bordspelapp-compose.service` als systemd-service. Docker gebruikt daarnaast `restart: unless-stopped` voor SQL Server, API, WebApp en Caddy.
+
+De migrator wordt niet door systemd gestart. Database-migraties blijven uitsluitend onderdeel van de GitHub Actions-deployment. De systemd-service start alleen reeds bestaande runtime-containers en voert daarna de interne healthchecks uit.
+
+Omdat er geen Elastic IP wordt gebruikt, kan het publieke IP na een start veranderen. Voer op de host dan uit:
+
+```bash
+sudo /opt/bordspel-app/deploy/refresh-sslip-hostnames.sh
+```
+
+Daarna veranderen de URL's naar `https://web.<nieuw-ip>.sslip.io` en `https://api.<nieuw-ip>.sslip.io`. GitHub CI blijft ook succesvol draaien wanneer de instance gestopt is; de deployjob detecteert de status en slaat deployment over.
+
 ## GitHub-configuratie
 
-Maak een OIDC trust policy die uitsluitend `repo:yasirkel/Bordspel-app:ref:refs/heads/fix/assessment-completion` toestaat. Gebruik een beperkte role met alleen ECR push en SSM deployment naar de specifieke instance.
+De deployjob gebruikt `environment: production`. Daardoor is de relevante legacy OIDC-subject:
+
+```text
+repo:yasirkel/Bordspel-app:environment:production
+```
+
+Een branch-subject (`...:ref:refs/heads/fix/assessment-completion`) hoort bij een job zonder environment. De GitHub-documentatie beschrijft dat een environment de subject claim wijzigt naar `environment:production`; configureer daarom de AWS trust policy op de environment-subject en beperk de GitHub `production` environment via branch protection tot `fix/assessment-completion`. Zie de [GitHub OIDC-documentatie](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws).
+
+De minimale trust conditions zijn conceptueel:
+
+```json
+"token.actions.githubusercontent.com:aud": "https://github.com/yasirkel",
+"token.actions.githubusercontent.com:sub": "repo:yasirkel/Bordspel-app:environment:production"
+```
+
+Controleer eerst of de repository immutable OIDC-subjects gebruikt. GitHub-repositories die na 15 juli 2026 zijn aangemaakt of hiervoor hebben gekozen gebruiken owner- en repository-ID's in de subject. Gebruik in dat geval de exact door GitHub getoonde immutable subjectwaarde.
+
+De workflow bevat daarnaast een expliciete ref-check, zodat ook een handmatige workflow-run vanaf een andere branch niet kan deployen.
+
+De workflow haalt op de EC2-host bij iedere deployment eerst de branch op. Daardoor worden wijzigingen in `docker-compose.yml`, `Caddyfile`, scripts en andere tracked deploymentbestanden daadwerkelijk bijgewerkt voordat de containers worden gestart.
+
+Gebruik een beperkte role met alleen ECR push en SSM deployment naar de specifieke instance.
 
 Vereiste repository secrets:
 

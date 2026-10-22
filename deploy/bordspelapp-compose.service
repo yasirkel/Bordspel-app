@@ -1,0 +1,16 @@
+[Unit]
+Description=BordspelApp Docker services
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/bordspel-app
+ExecStart=/usr/bin/docker compose --env-file /opt/bordspel-app/.env start sqlserver api webapp caddy
+ExecStartPost=/bin/bash /opt/bordspel-app/deploy/healthcheck.sh
+ExecStop=/usr/bin/docker compose --env-file /opt/bordspel-app/.env stop sqlserver api webapp caddy
+
+[Install]
+WantedBy=multi-user.target
