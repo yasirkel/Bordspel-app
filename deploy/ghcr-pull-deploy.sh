@@ -52,7 +52,7 @@ rollback() {
     cp --preserve=mode "$previous_env" "$APP_ROOT/.env"
     export API_IMAGE="$previous_api_image" WEBAPP_IMAGE="$previous_webapp_image" MIGRATOR_IMAGE="$previous_migrator_image"
     docker compose --env-file "$APP_ROOT/.env" up -d --no-deps api webapp caddy || true
-    "$APP_ROOT/deploy/healthcheck.sh" || true
+    bash "$APP_ROOT/deploy/healthcheck.sh" || true
   fi
 }
 trap rollback ERR
@@ -77,7 +77,7 @@ docker compose --env-file "$APP_ROOT/.env" run --rm migrator
 sed -i -E "s|^API_IMAGE=.*|API_IMAGE=$API_IMAGE|; s|^WEBAPP_IMAGE=.*|WEBAPP_IMAGE=$WEBAPP_IMAGE|; s|^MIGRATOR_IMAGE=.*|MIGRATOR_IMAGE=$MIGRATOR_IMAGE|" "$APP_ROOT/.env"
 activation_started=1
 docker compose --env-file "$APP_ROOT/.env" up -d --no-deps api webapp caddy
-"$APP_ROOT/deploy/healthcheck.sh"
+bash "$APP_ROOT/deploy/healthcheck.sh"
 
 printf '%s\n' "$commit_sha" > "$STATE_DIR/current.sha"
 chmod 600 "$STATE_DIR/current.sha"
