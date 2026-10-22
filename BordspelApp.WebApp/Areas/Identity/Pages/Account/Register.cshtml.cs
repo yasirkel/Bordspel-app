@@ -111,12 +111,14 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
         }
 
 
+        /// <summary>Bereidt het registratieformulier en externe loginopties voor.</summary>
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>Maakt een Identity-account en het gekoppelde domeinprofiel aan.</summary>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -139,7 +141,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
             }
             if (!ModelState.IsValid)
             {
-                // Log validation errors for debugging
+                // Registreer validatiefouten zodat een mislukte registratie kan worden onderzocht.
                 var errors = ModelState
                     .Where(kvp => kvp.Value.Errors.Count > 0)
                     .Select(kvp => new { Key = kvp.Key, Errors = kvp.Value.Errors.Select(e => e.ErrorMessage) });
@@ -245,6 +247,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
             return Page();
         }
 
+        // Maakt een nieuwe Identity-gebruiker aan voor UserManager.
         private ApplicationUser CreateUser()
         {
             try
@@ -259,6 +262,7 @@ namespace BordspelApp.WebApp.Areas.Identity.Pages.Account
             }
         }
 
+        // Geeft de emailstore terug die Identity voor gebruikersregistratie gebruikt.
         private IUserEmailStore<ApplicationUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)

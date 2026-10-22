@@ -11,12 +11,12 @@ public class BordspelAppIdentityDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    /// <summary>Configureert Identity-tabellen zonder een cross-database foreign key naar Person.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // This is an application-level link to the domain database.
-        // It intentionally has no EF relationship or foreign key.
+        // Dit is een applicatielink naar de domeindatabase; EF maakt bewust geen foreign key.
         modelBuilder.Entity<ApplicationUser>()
             .Property(user => user.PersonId)
             .IsRequired(false);

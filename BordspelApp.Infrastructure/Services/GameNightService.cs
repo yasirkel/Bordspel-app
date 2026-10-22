@@ -17,6 +17,7 @@ public class GameNightService : IGameNightService
         _boardGameRepository = boardGameRepository;
     }
 
+    /// <summary>Haalt toekomstige spelavonden op met optionele filters en paginering.</summary>
     public async Task<IEnumerable<GameNightListItemDto>> GetAllUpcomingAsync(string? searchCity = null, string? searchOrganizer = null, int page = 1, int pageSize = 10)
     {
         var query = _gameNightRepository.GetAllQueryable()
@@ -56,6 +57,7 @@ public class GameNightService : IGameNightService
         });
     }
 
+    /// <summary>Geeft het aantal toekomstige avonden terug dat bij de filters past.</summary>
     public async Task<int> GetTotalUpcomingCountAsync(string? searchCity = null, string? searchOrganizer = null)
     {
         var query = _gameNightRepository.GetAllQueryable()
@@ -78,6 +80,7 @@ public class GameNightService : IGameNightService
         return await query.CountAsync();
     }
 
+    /// <summary>Haalt de avonden op die door een organisator zijn aangemaakt.</summary>
     public async Task<IEnumerable<GameNightListItemDto>> GetMyGameNightsAsync(int organizerId)
     {
         var gameNights = await _gameNightRepository.GetAllQueryable()
@@ -102,6 +105,7 @@ public class GameNightService : IGameNightService
         });
     }
 
+    /// <summary>Haalt de avonden op waaraan een persoon deelneemt.</summary>
     public async Task<IEnumerable<GameNightListItemDto>> GetParticipatingGameNightsAsync(int personId)
     {
         var gameNights = await _gameNightRepository.GetAllQueryable()
@@ -126,6 +130,7 @@ public class GameNightService : IGameNightService
         });
     }
 
+    /// <summary>Laadt een spelavond met organisator, deelnemers, spellen en potluckitems.</summary>
     public async Task<GameNightDetailsDto?> GetDetailsAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -186,6 +191,7 @@ public class GameNightService : IGameNightService
         };
     }
 
+    /// <summary>Maakt een nieuwe spelavond en koppelt de gekozen bordspellen.</summary>
     public async Task<bool> CreateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
     {
         var address = new Address(dto.Street, dto.HouseNumber, dto.City, dto.PostalCode);
@@ -205,7 +211,7 @@ public class GameNightService : IGameNightService
         gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
         gameNight.IsPotluck = dto.IsPotluck;
 
-        // Add board games
+        // Koppel de bordspellen die in het formulier zijn geselecteerd.
         var boardGames = await _boardGameRepository.GetAllQueryable()
             .Where(bg => boardGameIds.Contains(bg.Id))
             .ToListAsync();
@@ -221,6 +227,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
+    /// <summary>Wijzigt een spelavond zolang nog niemand is ingeschreven.</summary>
     public async Task<bool> UpdateAsync(GameNightDetailsDto dto, List<int> boardGameIds)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -232,29 +239,29 @@ public class GameNightService : IGameNightService
 
         if (gameNight == null) return false;
 
-        // Check if editing is allowed
+        // Een avond met deelnemers mag volgens US02 niet meer worden aangepast.
         if (gameNight.Players.Any())
         {
             return false; // Cannot edit if players are registered
         }
 
-        // Update basic properties
+        // Werk de algemene gegevens van de spelavond bij.
         gameNight.Title = dto.Title;
         gameNight.Description = dto.Description;
         gameNight.DateTime = dto.StartAt;
         gameNight.MaxPlayers = dto.MaxPlayers;
         
-        // Update address
+        // Werk het adres als één value object bij.
         gameNight.Address.UpdateAddress(dto.Street, dto.HouseNumber, dto.City, dto.PostalCode);
         
-        // Update catering
+        // Werk de beschikbare dieetopties en potluckinstelling bij.
         gameNight.HasLactoseFreeOption = dto.HasLactoseFree;
         gameNight.HasNutFreeOption = dto.HasNutFree;
         gameNight.HasVegetarianOption = dto.HasVegetarian;
         gameNight.HasAlcoholFreeOption = dto.HasAlcoholFree;
         gameNight.IsPotluck = dto.IsPotluck;
 
-        // Update board games
+        // Vervang de spelkoppelingen door de nieuwe selectie.
         gameNight.BoardGames.Clear();
         var boardGames = await _boardGameRepository.GetAllQueryable()
             .Where(bg => boardGameIds.Contains(bg.Id))
@@ -271,6 +278,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
+    /// <summary>Verwijdert een spelavond wanneer deze nog geen deelnemers heeft.</summary>
     public async Task<bool> DeleteAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -279,7 +287,7 @@ public class GameNightService : IGameNightService
 
         if (gameNight == null) return false;
 
-        // Check if deletion is allowed
+        // Een avond met deelnemers mag volgens US02 niet worden verwijderd.
         if (gameNight.Players.Any())
         {
             return false; // Cannot delete if players are registered
@@ -289,6 +297,7 @@ public class GameNightService : IGameNightService
         return true;
     }
 
+    /// <summary>Controleert of een spelavond nog gewijzigd of verwijderd mag worden.</summary>
     public async Task<bool> CanEditOrDeleteAsync(int id)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()

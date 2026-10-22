@@ -30,6 +30,7 @@ await using (var identity = new BordspelAppIdentityDbContext(identityOptions))
     await identity.Database.MigrateAsync();
 }
 
+// Voer de optionele demonstratieseed alleen uit wanneer dit expliciet is aangezet.
 if (string.Equals(Environment.GetEnvironmentVariable("ASSESSMENT_SEED"), "true", StringComparison.OrdinalIgnoreCase))
 {
     var services = new ServiceCollection();
@@ -45,7 +46,7 @@ if (string.Equals(Environment.GetEnvironmentVariable("ASSESSMENT_SEED"), "true",
         provider.GetRequiredService<BordspelAppDbContext>(),
         provider.GetRequiredService<UserManager<ApplicationUser>>(),
         provider.GetRequiredService<RoleManager<IdentityRole>>());
-    Console.WriteLine("Assessment demonstration seed completed.");
+    Console.WriteLine("Demonstratieseed voltooid.");
 }
 
 Console.WriteLine("Database migrations completed.");

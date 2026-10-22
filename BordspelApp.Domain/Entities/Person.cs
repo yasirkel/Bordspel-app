@@ -22,7 +22,7 @@ public class Person
     public ICollection<GameNight> OrganizedGameNights { get; set; } = new List<GameNight>();
     public ICollection<GameNightPlayer> GameNightParticipations { get; set; } = new List<GameNightPlayer>();
 
-    // Computed property for Age
+    // Berekent de actuele leeftijd op basis van de geboortedatum.
     public int Age
     {
         get
@@ -37,24 +37,28 @@ public class Person
         }
     }
 
+    /// <summary>Geeft de volledige naam voor weergave in de applicatie.</summary>
     public string FullName => $"{FirstName} {LastName}";
 
-    // Validation methods
+    /// <summary>Controleert of de geboortedatum niet in de toekomst ligt.</summary>
     public bool IsValidDateOfBirth()
     {
         return DateOfBirth <= DateTime.Today;
     }
 
+    /// <summary>Controleert of de persoon minimaal zestien jaar oud is.</summary>
     public bool IsAtLeast16YearsOld()
     {
         return Age >= 16;
     }
 
+    /// <summary>Controleert of de persoon minimaal achttien jaar oud is.</summary>
     public bool IsAtLeast18YearsOld()
     {
         return Age >= 18;
     }
 
+    /// <summary>Controleert of de persoon als organisator mag optreden.</summary>
     public bool CanOrganizeGameNight()
     {
         return IsAtLeast18YearsOld();

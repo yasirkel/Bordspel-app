@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+# Start de bestaande EC2-host en toont de nieuwe publieke IP-configuratie.
 aws ec2 start-instances --instance-ids $InstanceId --profile $Profile --region $Region | Out-Null
 aws ec2 wait instance-running --instance-ids $InstanceId --profile $Profile --region $Region
 aws ec2 describe-instances --instance-ids $InstanceId --profile $Profile --region $Region `

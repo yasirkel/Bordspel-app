@@ -45,13 +45,15 @@ public class LoginModel : PageModel
         public bool RememberMe { get; set; }
     }
 
-    public Task OnGetAsync(string? returnUrl = null)
+        /// <summary>Bereidt het loginformulier en de terugkeerroute voor.</summary>
+        public Task OnGetAsync(string? returnUrl = null)
     {
         ReturnUrl = returnUrl ?? Url.Content("~/");
         return Task.CompletedTask;
     }
 
-    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
+        /// <summary>Controleert de Identity-gegevens en maakt de gebruiker ingelogd.</summary>
+        public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         returnUrl ??= Url.Content("~/");
 

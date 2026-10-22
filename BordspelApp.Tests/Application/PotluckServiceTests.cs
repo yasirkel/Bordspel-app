@@ -15,6 +15,7 @@ namespace BordspelApp.Tests.Application;
 public class PotluckServiceTests
 {
     [Fact]
+    /// <summary>Controleert succesvolle registratie van een item door een deelnemer.</summary>
     public async Task AddItemAsync_RegisteredParticipant_AddsItem()
     {
         var repository = new Mock<BordspelApp.Application.Interfaces.IPotluckRepository>();
@@ -44,6 +45,7 @@ public class PotluckServiceTests
     }
 
     [Fact]
+    /// <summary>Controleert dat lege potluckinvoer wordt afgewezen.</summary>
     public async Task AddItemAsync_EmptyDescription_RejectsItem()
     {
         var repository = new Mock<BordspelApp.Application.Interfaces.IPotluckRepository>();
@@ -61,6 +63,7 @@ public class PotluckServiceTests
     }
 
     [Fact]
+    /// <summary>Controleert dat een niet-deelnemer geen item kan toevoegen.</summary>
     public async Task AddItemAsync_NonParticipant_RejectsItem()
     {
         var repository = new Mock<BordspelApp.Application.Interfaces.IPotluckRepository>();
@@ -80,6 +83,7 @@ public class PotluckServiceTests
     }
 
     [Fact]
+    /// <summary>Controleert dat dieetkenmerken behouden blijven in het resultaat.</summary>
     public async Task AddItemAsync_PreservesDietaryCharacteristics()
     {
         var repository = new Mock<BordspelApp.Application.Interfaces.IPotluckRepository>();
@@ -108,6 +112,7 @@ public class PotluckServiceTests
     }
 
     [Fact]
+    /// <summary>Controleert dat alle items van een spelavond worden teruggelezen.</summary>
     public async Task GetItemsAsync_ReturnsItemsForGameNight()
     {
         var items = new List<PotluckItem>
@@ -127,6 +132,7 @@ public class PotluckServiceTests
     }
 
     [Fact]
+    /// <summary>Controleert opslag en uitlezen van dieetkenmerken via EF Core.</summary>
     public async Task PotluckRepository_StoresAndReadsDietaryCharacteristics()
     {
         var options = new DbContextOptionsBuilder<BordspelApp.Infrastructure.Data.BordspelAppDbContext>()

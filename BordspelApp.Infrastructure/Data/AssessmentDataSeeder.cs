@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BordspelApp.Infrastructure.Data;
 
 /// <summary>
-/// Explicit, idempotent seed for the deployed assessment demonstration.
-/// This is intentionally not called by WebApp or API startup.
+/// Expliciete, idempotente seed voor de gedeelde demonstratieomgeving.
+/// Deze seed wordt bewust niet vanuit WebApp- of API-startup uitgevoerd.
 /// </summary>
 public static class AssessmentDataSeeder
 {
@@ -141,7 +141,7 @@ public static class AssessmentDataSeeder
             var password = Environment.GetEnvironmentVariable(seed.PasswordVariable);
             if (string.IsNullOrWhiteSpace(password))
             {
-                throw new InvalidOperationException($"Environment variable {seed.PasswordVariable} is required for a new assessment account.");
+                throw new InvalidOperationException($"Omgevingsvariabele {seed.PasswordVariable} is nodig om een nieuw demonstratieaccount aan te maken.");
             }
 
             user = new ApplicationUser { UserName = seed.Email, Email = seed.Email, PersonId = person.Id };
@@ -183,7 +183,7 @@ public static class AssessmentDataSeeder
 
         if (night is null)
         {
-            night = new GameNight(title, description, dateTime, new Address("Assessmentstraat", "10", "Breda", "4811AA"), maxPlayers, organizer.Id)
+            night = new GameNight(title, description, dateTime, new Address("Spelplein", "10", "Breda", "4811AA"), maxPlayers, organizer.Id)
             {
                 IsPotluck = isPotluck,
                 HasLactoseFreeOption = true,
@@ -193,6 +193,11 @@ public static class AssessmentDataSeeder
             };
             domain.GameNights.Add(night);
             await domain.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            // Houd bestaande demonstratieavonden herkenbaar zonder hun relaties te wijzigen.
+            night.Address.UpdateAddress("Spelplein", "10", "Breda", "4811AA");
         }
 
         foreach (var gameName in gameNames)

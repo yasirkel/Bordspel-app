@@ -13,8 +13,7 @@ namespace BordspelApp.Api.GraphQL;
 
 public class Query
 {
-    // Returns DTOs for all game nights with related board games. Uses repository
-    // GetAllWithDetailsAsync() which eagerly loads related navigations.
+    /// <summary>Leest alle spelavonden met hun organisator en bordspellen uit de domeindatabase.</summary>
     public async Task<IEnumerable<GameNightDto>> GetGameNights([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -42,6 +41,7 @@ public class Query
         });
     }
 
+    /// <summary>Leest alle bordspellen uit de domeindatabase voor de GraphQL-query.</summary>
     public async Task<IEnumerable<BoardGameDto>> GetBoardGames([Service] IDbContextFactory<BordspelAppDbContext> contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -55,6 +55,7 @@ public class Query
     }
 
     // Recommend game nights to a person based on overlap with their co-players.
+    /// <summary>Geeft toekomstige avonden aan die aansluiten bij eerdere medespelers.</summary>
     public async Task<IEnumerable<RecommendationDto>> GetRecommendedGameNights(
         [Service] IDbContextFactory<BordspelAppDbContext> contextFactory,
         [Service] CurrentUserAccessor currentUser,
@@ -79,11 +80,11 @@ public class Query
             .Where(gn => gn.DateTime > DateTime.Now)
             .ToList();
 
-        // Nights the person already participates in
+        // Bepaal de avonden waaraan de persoon al deelneemt.
         var myNights = all.Where(gn => gn.Players.Any(p => p.PersonId == personId)).ToList();
         var myNightIds = myNights.Select(gn => gn.Id).ToHashSet();
 
-        // Co-players (people who attend nights the person attends)
+        // Verzamel unieke medespelers uit die avonden.
         var coPlayers = myNights
             .SelectMany(gn => gn.Players)
             .Where(p => p.PersonId != personId)
@@ -91,7 +92,7 @@ public class Query
             .Distinct()
             .ToHashSet();
 
-        // Candidate nights: upcoming nights person isn't participating in
+        // Filter toekomstige avonden waarin de persoon nog niet zit.
         var candidates = all.Where(gn => !myNightIds.Contains(gn.Id)).ToList();
 
         var scored = candidates

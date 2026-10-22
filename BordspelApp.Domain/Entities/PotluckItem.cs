@@ -19,6 +19,7 @@ public class PotluckItem
     {
     }
 
+    /// <summary>Maakt een potluckitem aan en weigert een lege omschrijving.</summary>
     public PotluckItem(
         int gameNightId,
         int personId,

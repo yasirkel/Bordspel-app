@@ -30,12 +30,12 @@ public class GameNight
     public ICollection<GameNightBoardGame> BoardGames { get; set; } = new List<GameNightBoardGame>();
     public ICollection<PotluckItem> PotluckItems { get; set; } = new List<PotluckItem>();
 
-    // Parameterless constructor for EF Core
+    // Constructor zonder parameters die EF Core gebruikt bij het laden van een bestaande avond.
     public GameNight()
     {
     }
 
-    // Constructor for creating new game nights
+    // Maakt een nieuwe spelavond aan met de organisator en basisgegevens.
     public GameNight(string title, string? description, DateTime startAt, Address address, int maxPlayers, int organizerId)
     {
         Title = title;
@@ -46,7 +46,7 @@ public class GameNight
         OrganizerId = organizerId;
     }
 
-    // Business Logic
+    /// <summary>Voegt een bordspel toe en maakt de koppeling met deze spelavond.</summary>
     public void AddBoardGame(BoardGame boardGame)
     {
         BoardGames.Add(new GameNightBoardGame
@@ -57,16 +57,19 @@ public class GameNight
         });
     }
 
+    /// <summary>Bepaalt opnieuw of de avond 18+ is op basis van de gekozen spellen.</summary>
     public void Recalculate18Plus()
     {
         Is18Plus = BoardGames.Any(gn => gn.BoardGame.Is18Plus);
     }
 
+    /// <summary>Controleert of het maximale aantal deelnemers is bereikt.</summary>
     public bool IsFull()
     {
         return Players.Count >= MaxPlayers;
     }
 
+    /// <summary>Controleert alle domeinregels waaraan een nieuwe deelnemer moet voldoen.</summary>
     public bool CanPersonJoin(Person person)
     {
         if (IsFull())
@@ -84,7 +87,7 @@ public class GameNight
             return false;
         }
 
-        // Check if already registered
+        // Een deelnemer mag niet tweemaal aan dezelfde avond worden toegevoegd.
         if (Players.Any(p => p.PersonId == person.Id))
         {
             return false;
@@ -93,11 +96,13 @@ public class GameNight
         return true;
     }
 
+    /// <summary>Controleert of de gekoppelde organisator oud genoeg is om te organiseren.</summary>
     public bool IsOrganizerValid()
     {
         return Organizer.CanOrganizeGameNight();
     }
 
+    /// <summary>Controleert of de spelavond in de toekomst plaatsvindt.</summary>
     public bool IsDateValid()
     {
         return DateTime > DateTime.Now;

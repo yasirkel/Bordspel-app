@@ -18,6 +18,7 @@ public class ProfileController : Controller
     }
 
     // GET: /Profile/Edit
+    /// <summary>Toont de profielgegevens van de huidige gebruiker.</summary>
     public async Task<IActionResult> Edit()
     {
         var email = User.FindFirstValue(ClaimTypes.Email);
@@ -58,6 +59,7 @@ public class ProfileController : Controller
     // POST: /Profile/Edit
     [HttpPost]
     [ValidateAntiForgeryToken]
+    /// <summary>Valideert en bewaart wijzigingen aan het eigen profiel.</summary>
     public async Task<IActionResult> Edit(ProfileEditViewModel model)
     {
         if (!ModelState.IsValid)

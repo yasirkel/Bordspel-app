@@ -13,6 +13,7 @@ public class BoardGameService : IBoardGameService
         _boardGameRepository = boardGameRepository;
     }
 
+    /// <summary>Haalt alle bordspellen op en zet ze om naar compacte weergavegegevens.</summary>
     public async Task<IEnumerable<BoardGameSimpleDto>> GetAllAsync()
     {
         var boardGames = await _boardGameRepository.GetAllQueryable()
@@ -31,6 +32,7 @@ public class BoardGameService : IBoardGameService
         });
     }
 
+    /// <summary>Haalt één bordspel met de bijbehorende toekomstige spelavonden op.</summary>
     public async Task<BoardGameDto?> GetDetailsAsync(int id)
     {
         var boardGame = await _boardGameRepository.GetAllQueryable()

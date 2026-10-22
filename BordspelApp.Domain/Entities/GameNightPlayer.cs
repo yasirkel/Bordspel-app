@@ -10,12 +10,12 @@ public class GameNightPlayer
 
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 
-    // Parameterless constructor for EF Core
+    // Constructor zonder parameters die EF Core gebruikt bij het laden van een registratie.
     public GameNightPlayer()
     {
     }
 
-    // Constructor for creating registrations
+    // Maakt een registratie aan voor een persoon bij een spelavond.
     public GameNightPlayer(int gameNightId, int personId)
     {
         GameNightId = gameNightId;

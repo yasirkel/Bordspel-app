@@ -23,6 +23,7 @@ public class HomeController : Controller
         _personService = personService;
     }
 
+    /// <summary>Toont de homepage met openbare en aanbevolen spelavonden.</summary>
     public async Task<IActionResult> Index()
     {
         // Load a few upcoming game nights from the database for the home page
@@ -48,7 +49,7 @@ public class HomeController : Controller
         {
             var appUser = await _userManager.GetUserAsync(User);
 
-            // If user not linked to a Person record, try to link by email so recommendations can be requested
+            // Koppel een ontbrekende domeinpersoon op basis van het Identity-e-mailadres.
             if (appUser != null && appUser.PersonId == null)
             {
                 try
@@ -80,8 +81,7 @@ public class HomeController : Controller
                     var res = await client.PostAsJsonAsync("graphql", req);
                     if (!res.IsSuccessStatusCode)
                     {
-                        var body = await res.Content.ReadAsStringAsync();
-                        _logger.LogWarning("GraphQL recommendations request failed: {Status} {Body}", res.StatusCode, body);
+                        _logger.LogWarning("GraphQL-aanbevelingen mislukten met status {Status}.", res.StatusCode);
                     }
                     else
                     {
@@ -112,11 +112,11 @@ public class HomeController : Controller
                                 });
                             }
 
-                            // If GraphQL returned no recommendations, do not provide a fallback list.
+                            // Zonder aanbevelingen tonen we bewust geen willekeurige fallbacklijst.
                             if (!any)
                             {
                                 _logger.LogInformation("GraphQL returned zero recommendations for person {PersonId}", appUser.PersonId);
-                                // Intentionally no fallback — the view will show a message instead.
+                                // De view toont in dat geval een duidelijke melding.
                             }
                         }
                     }
@@ -131,12 +131,14 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
+    /// <summary>Toont de privacy-informatie van de applicatie.</summary>
     public IActionResult Privacy()
     {
         return View();
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    /// <summary>Toont een gebruiksvriendelijke foutpagina zonder technische details.</summary>
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

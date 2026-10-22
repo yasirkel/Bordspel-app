@@ -16,6 +16,7 @@ public class RegistrationService : IRegistrationService
         _personRepository = personRepository;
     }
 
+    /// <summary>Controleert de inschrijfregels en registreert de persoon als dat is toegestaan.</summary>
     public async Task<RegistrationResponse> RegisterAsync(int personId, int gameNightId, bool forceRegister = false)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -47,7 +48,7 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Check if already registered
+        // Controleer of de persoon al aan deze avond deelneemt.
         if (gameNight.Players.Any(p => p.PersonId == personId))
         {
             return new RegistrationResponse
@@ -57,7 +58,7 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Check if game night is full
+        // Controleer of de capaciteit van de avond is bereikt.
         if (gameNight.Players.Count >= gameNight.MaxPlayers)
         {
             return new RegistrationResponse
@@ -67,7 +68,7 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Check age restriction
+        // Controleer de 18+-beperking van de avond.
         var age = CalculateAge(person.DateOfBirth);
         if (gameNight.Is18Plus && age < 18)
         {
@@ -78,11 +79,10 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Check if already registered on the same day
+        // Controleer de regel van maximaal één spelavond per dag.
         var gameNightDate = DateOnly.FromDateTime(gameNight.DateTime);
 
-        // Load the person's participating game nights via repository to ensure
-        // the related GameNight.DateTime is available (avoids null navigation issues).
+        // Laad de deelnames opnieuw zodat de datum van iedere spelavond beschikbaar is.
         var participatingNights = await _gameNightRepository.GetGameNightsByParticipantAsync(personId);
         var existingRegistrationSameDay = participatingNights
             .Any(gn => gn.Id != gameNightId && DateOnly.FromDateTime(gn.DateTime) == gameNightDate);
@@ -96,7 +96,7 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Check dietary restrictions
+        // Verzamel waarschuwingen wanneer profielvoorkeuren niet worden aangeboden.
         var dietaryWarnings = new List<string>();
         
         if (person.DietaryRequirements.IsLactoseFree && !gameNight.HasLactoseFreeOption)
@@ -119,7 +119,7 @@ public class RegistrationService : IRegistrationService
             dietaryWarnings.Add("Deze spelavond heeft geen alcoholvrije opties, maar jouw profiel geeft 'geen alcohol' aan.");
         }
 
-        // If dietary warnings exist and not forcing registration, return warning
+        // Geef eerst een waarschuwing; forceRegister bevestigt de keuze expliciet.
         if (dietaryWarnings.Any() && !forceRegister)
         {
             return new RegistrationResponse
@@ -130,7 +130,7 @@ public class RegistrationService : IRegistrationService
             };
         }
 
-        // Register the person
+        // Voeg de registratie toe nadat alle regels zijn doorlopen.
         var registration = new GameNightPlayer(gameNightId, personId);
         gameNight.Players.Add(registration);
         
@@ -143,6 +143,7 @@ public class RegistrationService : IRegistrationService
         };
     }
 
+    /// <summary>Verwijdert de eigen deelname aan een spelavond.</summary>
     public async Task<bool> UnregisterAsync(int personId, int gameNightId)
     {
         var gameNight = await _gameNightRepository.GetAllQueryable()
@@ -160,6 +161,7 @@ public class RegistrationService : IRegistrationService
         return true;
     }
 
+    /// <summary>Controleert of een persoon bij een spelavond staat ingeschreven.</summary>
     public async Task<bool> IsRegisteredAsync(int personId, int gameNightId)
     {
         return await _gameNightRepository.GetAllQueryable()
@@ -167,6 +169,7 @@ public class RegistrationService : IRegistrationService
             .AnyAsync(gn => gn.Id == gameNightId && gn.Players.Any(p => p.PersonId == personId));
     }
 
+    // Berekent een leeftijd waarbij een verjaardag later in het jaar correct wordt verwerkt.
     private int CalculateAge(DateTime dateOfBirth)
     {
         var today = DateTime.Today;

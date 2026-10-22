@@ -18,9 +18,10 @@ public class BordspelAppDbContext : DbContext
     public DbSet<GameNightBoardGame> GameNightBoardGames { get; set; }
     public DbSet<PotluckItem> PotluckItems { get; set; }
 
+    /// <summary>Configureert entiteiten, value objects en relaties in de domeindatabase.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Person Configuration
+        // Configureer profielvelden, value objects en de organisatorrelatie.
         modelBuilder.Entity<Person>(entity =>
         {
             entity.HasKey(p => p.Id);
@@ -29,7 +30,7 @@ public class BordspelAppDbContext : DbContext
             entity.Property(p => p.Email).IsRequired().HasMaxLength(255);
             entity.HasIndex(p => p.Email).IsUnique();
 
-            // Owned type for Address
+            // Adres wordt als value object in dezelfde tabel opgeslagen.
             entity.OwnsOne(p => p.Address, address =>
             {
                 address.Property(a => a.Street).HasMaxLength(200);
@@ -37,17 +38,17 @@ public class BordspelAppDbContext : DbContext
                 address.Property(a => a.City).HasMaxLength(100);
             });
 
-            // Owned type for DietaryRequirements
+            // Dieetvoorkeuren worden als value object opgeslagen.
             entity.OwnsOne(p => p.DietaryRequirements);
 
-            // One-to-many: Person organizes many GameNights
+            // Eén persoon kan meerdere spelavonden organiseren.
             entity.HasMany(p => p.OrganizedGameNights)
                 .WithOne(gn => gn.Organizer)
                 .HasForeignKey(gn => gn.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // BoardGame Configuration
+        // Configureer de bordspelvelden en maximale afbeeldings-URL-lengte.
         modelBuilder.Entity<BoardGame>(entity =>
         {
             entity.HasKey(bg => bg.Id);
@@ -56,14 +57,14 @@ public class BordspelAppDbContext : DbContext
             entity.Property(bg => bg.PhotoUrl).HasMaxLength(500);
         });
 
-        // GameNight Configuration
+        // Configureer de kerngegevens en het adres van een spelavond.
         modelBuilder.Entity<GameNight>(entity =>
         {
             entity.HasKey(gn => gn.Id);
             entity.Property(gn => gn.DateTime).IsRequired();
             entity.Property(gn => gn.MaxPlayers).IsRequired();
 
-            // Owned type for Address
+            // Het adres blijft onderdeel van de spelavond en krijgt geen eigen tabel.
             entity.OwnsOne(gn => gn.Address, address =>
             {
                 address.Property(a => a.Street).HasMaxLength(200);
@@ -88,7 +89,7 @@ public class BordspelAppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // GameNightPlayer (Many-to-Many junction table)
+        // Configureer de koppeltabel tussen spelavonden en deelnemers.
         modelBuilder.Entity<GameNightPlayer>(entity =>
         {
             entity.HasKey(gnp => new { gnp.GameNightId, gnp.PersonId });
@@ -104,7 +105,7 @@ public class BordspelAppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // GameNightBoardGame (Many-to-Many junction table)
+        // Configureer de koppeltabel tussen spelavonden en bordspellen.
         modelBuilder.Entity<GameNightBoardGame>(entity =>
         {
             entity.HasKey(gnbg => new { gnbg.GameNightId, gnbg.BoardGameId });

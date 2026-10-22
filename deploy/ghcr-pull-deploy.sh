@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Controleert de laatste geslaagde GitHub-build, migreert eerst de databases
+# en activeert daarna alleen images met exact dezelfde commit-SHA.
 set -Eeuo pipefail
 
 APP_ROOT="/opt/bordspel-app"

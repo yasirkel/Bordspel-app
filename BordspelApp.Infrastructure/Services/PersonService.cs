@@ -14,6 +14,7 @@ public class PersonService : IPersonService
         _personRepository = personRepository;
     }
 
+    /// <summary>Haalt een profiel met adres en dieetvoorkeuren op basis van het ID op.</summary>
     public async Task<PersonDto?> GetByIdAsync(int id)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -41,6 +42,7 @@ public class PersonService : IPersonService
         };
     }
 
+    /// <summary>Haalt een profiel op via het e-mailadres van de gekoppelde gebruiker.</summary>
     public async Task<PersonDto?> GetByEmailAsync(string email)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -68,6 +70,7 @@ public class PersonService : IPersonService
         };
     }
 
+    /// <summary>Werk profielgegevens, dieetvoorkeuren en adres bij.</summary>
     public async Task<bool> UpdateProfileAsync(PersonDto dto)
     {
         var person = await _personRepository.GetAllQueryable()
@@ -80,13 +83,13 @@ public class PersonService : IPersonService
         person.LastName = dto.LastName;
         person.Email = dto.Email ?? person.Email;
         
-        // Update dietary preferences
+        // Werk de dieetvoorkeuren van het profiel bij.
         person.DietaryRequirements.IsLactoseFree = dto.LactoseFree;
         person.DietaryRequirements.IsNutFree = dto.NutFree;
         person.DietaryRequirements.IsVegetarian = dto.Vegetarian;
         person.DietaryRequirements.IsAlcoholFree = dto.NoAlcohol;
 
-        // Update address
+        // Werk het adres bij of maak een adres aan als dat nog ontbreekt.
         if (!string.IsNullOrWhiteSpace(dto.Street) && !string.IsNullOrWhiteSpace(dto.City))
         {
             if (person.Address == null)
@@ -113,6 +116,7 @@ public class PersonService : IPersonService
         return true;
     }
 
+    /// <summary>Bereken de actuele leeftijd van een persoon.</summary>
     public async Task<int> GetAgeAsync(int personId)
     {
         var person = await _personRepository.GetAllQueryable()

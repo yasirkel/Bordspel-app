@@ -13,6 +13,7 @@ public class PotluckService : IPotluckService
         _potluckRepository = potluckRepository;
     }
 
+    /// <summary>Registreert een item voor een deelnemer die aan de spelavond meedoet.</summary>
     public async Task<PotluckItemDto?> AddItemAsync(PotluckItemCreateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Description))
@@ -39,12 +40,14 @@ public class PotluckService : IPotluckService
         return Map(savedItem);
     }
 
+    /// <summary>Haalt alle geregistreerde potluckitems van een spelavond op.</summary>
     public async Task<IReadOnlyList<PotluckItemDto>> GetItemsAsync(int gameNightId)
     {
         var items = await _potluckRepository.GetByGameNightAsync(gameNightId);
         return items.Select(Map).ToList();
     }
 
+    // Zet een domeinitem om naar het contract dat de applicatielaag gebruikt.
     private static PotluckItemDto Map(PotluckItem item)
     {
         return new PotluckItemDto
