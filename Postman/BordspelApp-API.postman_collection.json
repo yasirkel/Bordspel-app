@@ -5,12 +5,50 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5091" },
-    { "key": "gameNightId", "value": "1" },
-    { "key": "personId", "value": "1" },
-    { "key": "boardGameId", "value": "1" },
-    { "key": "loginEmail", "value": "" },
-    { "key": "loginPassword", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5091"
+    },
+    {
+      "key": "gameNightId",
+      "value": "1"
+    },
+    {
+      "key": "personId",
+      "value": "1"
+    },
+    {
+      "key": "boardGameId",
+      "value": "1"
+    },
+    {
+      "key": "loginEmail",
+      "value": ""
+    },
+    {
+      "key": "loginPassword",
+      "value": ""
+    },
+    {
+      "key": "adminEmail",
+      "value": ""
+    },
+    {
+      "key": "adminPassword",
+      "value": ""
+    },
+    {
+      "key": "allowMutations",
+      "value": "false"
+    },
+    {
+      "key": "createdPersonId",
+      "value": ""
+    },
+    {
+      "key": "createdBoardGameId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -20,16 +58,66 @@
           "name": "Login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
           },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login succeeds', function () { pm.response.to.have.status(200); });", "pm.test('Identity cookie is returned', function () { pm.expect(pm.cookies.has('.AspNetCore.Identity.Application')).to.be.true; });"] } }]
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login succeeds', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Identity cookie is returned', function () { pm.expect(pm.cookies.has('.AspNetCore.Identity.Application')).to.be.true; });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Logout",
-          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Logout succeeds', function () { pm.response.to.have.status(204); });"] } }]
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout succeeds', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -38,38 +126,246 @@
       "item": [
         {
           "name": "List game nights",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights", "host": ["{{baseUrl}}"], "path": ["api", "gamenights"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns game nights', function () { pm.response.to.have.status(200); });", "pm.test('Response is a collection', function () { pm.expect(pm.response.json()).to.be.an('array'); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns game nights', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is a collection', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List upcoming game nights",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights/upcoming", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "upcoming"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns upcoming game nights', function () { pm.response.to.have.status(200); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/upcoming",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "upcoming"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns upcoming game nights', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List board games",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/boardgames", "host": ["{{baseUrl}}"], "path": ["api", "boardgames"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Returns board games', function () { pm.response.to.have.status(200); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns board games', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get game night",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Game night exists', function () { pm.response.to.have.status(200); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{gameNightId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Game night exists', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List adult board games",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/boardgames/adult", "host": ["{{baseUrl}}"], "path": ["api", "boardgames", "adult"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Adult board games endpoint succeeds', function () { pm.response.to.have.status(200); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames/adult",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames",
+                "adult"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Adult board games endpoint succeeds', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get board game",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/boardgames/{{boardGameId}}", "host": ["{{baseUrl}}"], "path": ["api", "boardgames", "{{boardGameId}}"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Board game detail succeeds', function () { pm.expect([200, 404]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames/{{boardGameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames",
+                "{{boardGameId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Board game detail succeeds', function () { pm.expect([200, 404]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "List persons",
-          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/persons", "host": ["{{baseUrl}}"], "path": ["api", "persons"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Persons endpoint responds', function () { pm.expect([200, 401, 403]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Persons endpoint responds', function () { pm.expect([200, 401, 403]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get missing board game",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Missing board game returns 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get missing game night",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Missing game night returns 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -80,31 +376,648 @@
           "name": "Login for authenticated actions",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"{{loginPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
           },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login for authenticated actions succeeds', function () { pm.response.to.have.status(200); });"] } }]
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login for authenticated actions succeeds', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Join current user",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}", "players"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Join returns an expected business response', function () { pm.expect([200, 400, 404]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{gameNightId}}",
+                "players"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Join current user succeeds', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create game night as current user",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman test night\",\n  \"description\": \"Temporary assessment test\",\n  \"dateTime\": \"2030-01-01T19:00:00Z\",\n  \"maxPlayers\": 4,\n  \"address\": { \"street\": \"Teststraat\", \"houseNumber\": \"1\", \"city\": \"Breda\", \"postalCode\": \"4811AA\" },\n  \"isPotluck\": true,\n  \"boardGameIds\": [1]\n}" }, "url": { "raw": "{{baseUrl}}/api/gamenights", "host": ["{{baseUrl}}"], "path": ["api", "gamenights"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create is accepted or rejected by a business rule', function () { pm.expect([201, 400, 403]).to.include(pm.response.code); });", "if (pm.response.code === 201) { pm.environment.set('createdGameNightId', pm.response.json().id); }"] } }]
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman test night\",\n  \"description\": \"Temporary assessment test\",\n  \"dateTime\": \"2030-01-01T19:00:00Z\",\n  \"maxPlayers\": 4,\n  \"address\": { \"street\": \"Teststraat\", \"houseNumber\": \"1\", \"city\": \"Breda\", \"postalCode\": \"4811AA\" },\n  \"isPotluck\": true,\n  \"boardGameIds\": [1]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary game night is created', function () { pm.response.to.have.status(201); pm.collectionVariables.set('createdGameNightId', pm.response.json().id); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update created game night",
-          "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman gecontroleerde avond\",\n  \"description\": \"Veilige tijdelijke controle\",\n  \"dateTime\": \"2030-01-02T19:00:00Z\",\n  \"maxPlayers\": 4,\n  \"address\": { \"street\": \"Teststraat\", \"houseNumber\": \"1\", \"city\": \"Breda\", \"postalCode\": \"4811AA\" },\n  \"isPotluck\": true,\n  \"boardGameIds\": [1]\n}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{createdGameNightId}}", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{createdGameNightId}}"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Update temporary game night succeeds', function () { pm.expect([200, 400, 404]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman gecontroleerde avond\",\n  \"description\": \"Veilige tijdelijke controle\",\n  \"dateTime\": \"2030-01-02T19:00:00Z\",\n  \"maxPlayers\": 4,\n  \"address\": { \"street\": \"Teststraat\", \"houseNumber\": \"1\", \"city\": \"Breda\", \"postalCode\": \"4811AA\" },\n  \"isPotluck\": true,\n  \"boardGameIds\": [1]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{createdGameNightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{createdGameNightId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary game night is updated', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete created game night",
-          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/gamenights/{{createdGameNightId}}", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{createdGameNightId}}"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Delete temporary game night succeeds', function () { pm.expect([204, 400, 404]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{createdGameNightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{createdGameNightId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary game night is deleted', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Complete endpoint coverage",
+      "item": [
+        {
+          "name": "GET person by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/{{personId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "{{personId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GET person by id returns 200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET missing person",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Missing person returns 404', function(){pm.response.to.have.status(404);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Join by explicit person id",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/join/{{personId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{gameNightId}}",
+                "join",
+                "{{personId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Explicit join succeeds', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{adminEmail}}\",\"password\":\"{{adminPassword}}\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin login succeeds', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create temporary board game",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Postman tijdelijke controle {{timestamp}}\",\"description\":\"Tijdelijke testdata\",\"genre\":0,\"type\":0,\"is18Plus\":false,\"photoUrl\":\"/images/boardgames/postman.svg\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary board game created', function(){pm.response.to.have.status(201);pm.collectionVariables.set('createdBoardGameId',pm.response.json().id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update temporary board game",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames/{{createdBoardGameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames",
+                "{{createdBoardGameId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\":{{createdBoardGameId}},\"name\":\"Postman tijdelijke controle bijgewerkt\",\"description\":\"Tijdelijke testdata\",\"genre\":0,\"type\":0,\"is18Plus\":false,\"photoUrl\":\"/images/boardgames/postman.svg\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary board game updated', function(){pm.response.to.have.status(204);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete temporary board game",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/boardgames/{{createdBoardGameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "boardgames",
+                "{{createdBoardGameId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary board game deleted', function(){pm.response.to.have.status(204);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create temporary person",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/persons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\":\"Postman\",\"lastName\":\"Tijdelijk\",\"email\":\"postman-{{timestamp}}@example.test\",\"dateOfBirth\":\"1990-01-01T00:00:00Z\",\"gender\":0,\"address\":{\"street\":\"Teststraat\",\"houseNumber\":\"2\",\"city\":\"Breda\",\"postalCode\":\"4811AB\"},\"dietaryRequirements\":{\"isLactoseFree\":false,\"isNutFree\":true,\"isVegetarian\":true,\"isAlcoholFree\":true}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary person created', function(){pm.response.to.have.status(201);pm.collectionVariables.set('createdPersonId',pm.response.json().id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update temporary person",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/{{createdPersonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "{{createdPersonId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\":{{createdPersonId}},\"firstName\":\"Postman\",\"lastName\":\"Tijdelijk bijgewerkt\",\"email\":\"postman-{{timestamp}}@example.test\",\"dateOfBirth\":\"1990-01-01T00:00:00Z\",\"gender\":0,\"address\":{\"street\":\"Teststraat\",\"houseNumber\":\"2\",\"city\":\"Breda\",\"postalCode\":\"4811AB\"},\"dietaryRequirements\":{\"isLactoseFree\":false,\"isNutFree\":true,\"isVegetarian\":true,\"isAlcoholFree\":true}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary person updated', function(){pm.response.to.have.status(204);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete temporary person",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/{{createdPersonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "{{createdPersonId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Temporary person deleted', function(){pm.response.to.have.status(204);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin link validation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Admin/link-user-person",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Admin",
+                "link-user-person"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"\",\"personId\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (pm.variables.get('allowMutations') !== 'true') { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin validation returns 400', function(){pm.response.to.have.status(400);});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -113,18 +1026,101 @@
       "item": [
         {
           "name": "List game nights and board games",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ gameNights { id title dateTime organizerName boardGames { id name genre } } boardGames { id name genre } }\"\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('GraphQL succeeds', function () { pm.response.to.have.status(200); });", "pm.test('GraphQL has no errors', function () { pm.expect(pm.response.json().errors).to.be.undefined; });"] } }]
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ gameNights { id title dateTime organizerName boardGames { id name genre } } boardGames { id name genre } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GraphQL succeeds', function () { pm.response.to.have.status(200); });",
+                  "pm.test('GraphQL has no errors', function () { pm.expect(pm.response.json().errors).to.be.undefined; });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "GraphQL recommended game nights",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ recommendedGameNights { gameNight { id title dateTime } commonPlayersCount } }\"\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('GraphQL recommendation responds', function () { pm.expect([200, 400, 401, 403]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ recommendedGameNights { gameNight { id title dateTime } commonPlayersCount } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GraphQL recommendation responds', function () { pm.expect([200, 400, 401, 403]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Logout before expected failures",
-          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Logout before negative tests succeeds', function () { pm.response.to.have.status(204); });"] } }]
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout before negative tests succeeds', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -133,10 +1129,53 @@
       "item": [
         {
           "name": "Join without authentication",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": { "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players", "host": ["{{baseUrl}}"], "path": ["api", "gamenights", "{{gameNightId}}", "players"] } },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Unauthenticated mutation is rejected', function () { pm.expect([401, 403]).to.include(pm.response.code); });"] } }]
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gamenights/{{gameNightId}}/players",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gamenights",
+                "{{gameNightId}}",
+                "players"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unauthenticated mutation is rejected', function () { pm.expect([401, 403]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
         }
       ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "pm.collectionVariables.set('timestamp', Date.now().toString());"
+        ]
+      }
     }
   ]
 }
