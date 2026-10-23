@@ -118,7 +118,7 @@
         },
         {
           "name": "GraphQL recommended game nights",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($personId: Int!) { recommendedGameNights(personId: $personId) { id title dateTime } }\",\n  \"variables\": { \"personId\": {{personId}} }\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ recommendedGameNights { gameNight { id title dateTime } commonPlayersCount } }\"\n}" }, "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] } },
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('GraphQL recommendation responds', function () { pm.expect([200, 400, 401, 403]).to.include(pm.response.code); });"] } }]
         },
         {
